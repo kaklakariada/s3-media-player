@@ -28,7 +28,6 @@ export class AuthService {
         return Auth.currentUserCredentials()
             .then((cred) => {
                 const essentialCredentials = Auth.essentialCredentials(cred);
-                console.debug("Got credentials", cred, essentialCredentials);
                 return essentialCredentials;
             })
             .catch((err: any) => {
@@ -57,7 +56,6 @@ export class AuthService {
     }
 
     signOut() {
-
         Auth.signOut();
     }
 }

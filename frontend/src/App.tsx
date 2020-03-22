@@ -1,12 +1,12 @@
 import React from 'react';
 import { withAuthenticator } from "aws-amplify-react";
 import './App.css';
-import S3BucketList from './components/S3BucketList';
+import MediaList from './components/MediaList';
 
 function App() {
   return (
     <div className="App">
-      <S3BucketList />
+      <MediaList />
     </div>
   );
 }

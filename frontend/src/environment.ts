@@ -5,6 +5,7 @@ export interface FrontendConfig {
     cognitoIdentityPoolId: string;
     cognitoUserPoolId: string;
     cognitoUserPoolWebClientId: string;
+    mediaBucket: string;
 }
 
 interface AmplifyConfig {
@@ -21,6 +22,7 @@ interface AmplifyConfig {
 
 interface EnvironmentConfig {
     region: string;
+    mediaBucket: string;
     amplifyConfig: AmplifyConfig;
 }
 
@@ -28,6 +30,7 @@ const config: FrontendConfig = CONFIG;
 
 const environment: EnvironmentConfig = {
     region: config.region,
+    mediaBucket: config.mediaBucket,
     amplifyConfig: {
         Auth: {
             identityPoolId: config.cognitoIdentityPoolId,
