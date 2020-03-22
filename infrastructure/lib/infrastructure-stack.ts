@@ -1,10 +1,12 @@
 import * as cdk from '@aws-cdk/core';
 import { StaticContentConstruct } from './static-content';
+import { CognitoAuthConstruct } from './auth';
 
 export interface InfrastructureStackProps extends cdk.StackProps {
   domain: string;
   hostedZoneName: string;
   sslCertificateArn: string;
+  contactEmailAddress: string;
 }
 
 export class InfrastructureStack extends cdk.Stack {
@@ -16,5 +18,10 @@ export class InfrastructureStack extends cdk.Stack {
       hostedZoneName: props.hostedZoneName,
       sslCertificateArn: props.sslCertificateArn
     });
+
+    new CognitoAuthConstruct(this, 'Auth', {
+      contactEmailAddress: props.contactEmailAddress,
+      domain: props.domain
+    })
   }
 }

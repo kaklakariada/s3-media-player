@@ -13,8 +13,9 @@ const props: InfrastructureStackProps = {
     tags: { stack: config.stackName },
     domain: config.domain,
     hostedZoneName: config.hostedZoneName,
-    sslCertificateArn: config.sslCertificateArn
+    sslCertificateArn: config.sslCertificateArn,
+    contactEmailAddress: config.contactEmailAddress
 };
 
 const app = new cdk.App();
-new InfrastructureStack(app, 'InfrastructureStack', props);
+new InfrastructureStack(app, config.stackName, props);
