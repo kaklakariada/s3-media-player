@@ -9,7 +9,10 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import FolderIcon from '@material-ui/icons/Folder';
 import AudiotrackIcon from '@material-ui/icons/Audiotrack';
-import ListSubheader from '@material-ui/core/ListSubheader';
+import InsertDriveFileIcon from '@material-ui/icons/InsertDriveFile';
+import KeyboardReturnIcon from '@material-ui/icons/KeyboardReturn';
+
+
 
 const s3 = new S3Service();
 
@@ -23,7 +26,16 @@ const FolderListItem: React.FC<{ folder: S3Object, openFolderCallback: (object: 
     </ListItem>);
 }
 
-const FileItem: React.FC<{ file: S3Object }> = ({ file }) => {
+const OtherFileItem: React.FC<{ file: S3Object }> = ({ file }) => {
+    return (<ListItem>
+        <ListItemIcon>
+            <InsertDriveFileIcon />
+        </ListItemIcon>
+        <ListItemText primary={file.key} />
+    </ListItem>);
+}
+
+const AudioFileItem: React.FC<{ file: S3Object }> = ({ file }) => {
     const clickHandler = () => {
         console.log("Play file ", file);
     };
@@ -54,12 +66,32 @@ const MediaList: React.FC = () => {
         setCurrentFolder(object);
     }
 
+    function upOneLevelCallback() {
+        const currentFolderWithoutTrailingSlash = currentFolder.key.substring(currentFolder.key.length - 1);
+        const parentFolderKey = currentFolderWithoutTrailingSlash.substring(0, currentFolderWithoutTrailingSlash.lastIndexOf('/'));
+        openFolderCallback({ key: parentFolderKey, isFolder: true });
+    }
+
+    const isAudioFile = (object: S3Object) => object.key.toLowerCase().endsWith('.mp3');
+
     function renderItem(object: S3Object) {
         if (object.isFolder) {
             return <FolderListItem key={object.key} folder={object} openFolderCallback={openFolderCallback} />;
         }
-        return <FileItem key={object.key} file={object} />
+        if (isAudioFile(object)) {
+            return <AudioFileItem key={object.key} file={object} />
+        }
+        return <OtherFileItem key={object.key} file={object} />
     }
+
+
+    const upOneLevel: JSX.Element = (<ListItem button onClick={upOneLevelCallback} disabled={currentFolder.key === ''}>
+        <ListItemIcon>
+            <KeyboardReturnIcon />
+        </ListItemIcon>
+        <ListItemText primary="Up one level" />
+    </ListItem>);
+
     return (
         <Container>
             <div>
@@ -67,6 +99,7 @@ const MediaList: React.FC = () => {
                     (keys === undefined)
                         ? <CircularProgress />
                         : <List dense={true}>
+                            {upOneLevel}
                             {keys.map(renderItem)}
                         </List>
                 }

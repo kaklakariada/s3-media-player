@@ -31,12 +31,11 @@ export class S3Service {
     }
 
     convertObject(object: S3.Object): S3Object {
-        return {
-            key: object.Key || "Unknown",
-            isFolder: false
-        };
+        const key = object.Key || "Unknown";
+        const isFolder = key.endsWith('/');
+        return { key, isFolder };
     }
-    
+
     convertCommonPrefix(prefix: S3.CommonPrefix): S3Object {
         return {
             key: prefix.Prefix || "Unknown",
