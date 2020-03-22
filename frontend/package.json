@@ -10,6 +10,8 @@
     "@types/node": "^12.12.30",
     "@types/react": "^16.9.25",
     "@types/react-dom": "^16.9.5",
+    "aws-amplify": "^2.2.6",
+    "aws-amplify-react": "^3.1.7",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
