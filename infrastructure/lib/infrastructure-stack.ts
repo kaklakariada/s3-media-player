@@ -1,12 +1,15 @@
 import * as cdk from '@aws-cdk/core';
 import { StaticContentConstruct } from './static-content';
 import { CognitoAuthConstruct } from './auth';
+import { PolicyStatement, Role } from "@aws-cdk/aws-iam";
+import { Bucket } from "@aws-cdk/aws-s3";
 
 export interface InfrastructureStackProps extends cdk.StackProps {
   domain: string;
   hostedZoneName: string;
   sslCertificateArn: string;
   contactEmailAddress: string;
+  mediaBucket: string;
 }
 
 export class InfrastructureStack extends cdk.Stack {
@@ -19,9 +22,17 @@ export class InfrastructureStack extends cdk.Stack {
       sslCertificateArn: props.sslCertificateArn
     });
 
-    new CognitoAuthConstruct(this, 'Auth', {
+    const auth = new CognitoAuthConstruct(this, 'Auth', {
       contactEmailAddress: props.contactEmailAddress,
       domain: props.domain
-    })
+    });
+
+    const mediaBucket = Bucket.fromBucketName(this, 'MediaBucket', props.mediaBucket);
+    auth.getUserRole().addToPolicy(new PolicyStatement({
+      actions: ["s3:ListBucket"], resources: [mediaBucket.bucketArn]
+    }));
+    auth.getUserRole().addToPolicy(new PolicyStatement({
+      actions: ["s3:ListObjects"], resources: [mediaBucket.arnForObjects('*')]
+    }));
   }
 }

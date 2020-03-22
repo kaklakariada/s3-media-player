@@ -11,6 +11,12 @@ interface CognitoAuthProps {
 }
 export class CognitoAuthConstruct extends Construct {
 
+  private userRole: Role;
+
+  getUserRole() {
+    return this.userRole;
+  }
+
   constructor(scope: Construct, id: string, props: CognitoAuthProps) {
     super(scope, id);
     const userPool : CfnUserPool = new CfnUserPool(this, "UserPool", {
@@ -67,7 +73,7 @@ If you have any questions, please contact ${props.contactEmailAddress}`,
       }]
     });
 
-    const userRole: Role = new Role(this, "UserRole", {
+    this.userRole = new Role(this, "UserRole", {
       maxSessionDuration: Duration.hours(1),
       assumedBy: new FederatedPrincipal("cognito-identity.amazonaws.com", {
         "StringEquals": { "cognito-identity.amazonaws.com:aud": identityPool.ref },
@@ -78,14 +84,14 @@ If you have any questions, please contact ${props.contactEmailAddress}`,
     new CfnUserPoolGroup(this, "UserGroup", {
       groupName: "Users",
       description: "Group for users",
-      roleArn: userRole.roleArn,
+      roleArn: this.userRole.roleArn,
       userPoolId: userPool.ref
     });
 
     new CfnIdentityPoolRoleAttachment(this, "RoleAttachment", {
       identityPoolId: identityPool.ref,
       roles: {
-        authenticated: userRole.roleArn
+        authenticated: this.userRole.roleArn
       },
       roleMappings: {
         userpool1: {

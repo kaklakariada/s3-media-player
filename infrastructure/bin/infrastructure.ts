@@ -14,7 +14,8 @@ const props: InfrastructureStackProps = {
     domain: config.domain,
     hostedZoneName: config.hostedZoneName,
     sslCertificateArn: config.sslCertificateArn,
-    contactEmailAddress: config.contactEmailAddress
+    contactEmailAddress: config.contactEmailAddress,
+    mediaBucket: config.mediaBucket
 };
 
 const app = new cdk.App();

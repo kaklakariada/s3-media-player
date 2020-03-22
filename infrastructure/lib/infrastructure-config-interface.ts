@@ -5,4 +5,5 @@ export interface InfrastructureConfig {
     sslCertificateArn: string;
     stackName: string;
     contactEmailAddress: string;
+    mediaBucket: string;
 }
