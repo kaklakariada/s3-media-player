@@ -25,9 +25,9 @@ export interface S3Object {
 
 function getParent(path: string): S3FolderObject {
     if (path.endsWith('/')) {
-        path = path.substr(path.length - 1);
+        path = path.substr(0, path.length - 1);
     }
-    const parentPath = path.substr(0, path.lastIndexOf('/'));
+    const parentPath = path.substr(0, path.lastIndexOf('/') + 1);
     return new S3FolderObject(parentPath);
 }
 
@@ -96,7 +96,7 @@ export class S3Service {
         const response = await s3Client.listObjectsV2(params).promise();
         const folders: S3Object[] = response.CommonPrefixes?.map(this.convertCommonPrefix) || [];
         const objects: S3Object[] = response.Contents?.map(this.convertObject) || [];
-        return folders.concat(objects);
+        return folders.concat(objects).filter(o => o.key !== prefix);
     }
 
     convertObject(object: S3.Object): S3Object {

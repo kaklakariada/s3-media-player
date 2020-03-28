@@ -53,13 +53,14 @@ const AudioFileItem: React.FC<{ file: S3Object }> = ({ file }) => {
 }
 
 const MediaList: React.FC = () => {
-    const [keys, setMediaList] = useState<S3Object[] | undefined>(undefined);
+    const [folderListing, setFolderListing] = useState<S3Object[] | undefined>(undefined);
     const [currentFolder, setCurrentFolder] = useState<S3Object>(new S3FolderObject(''));
 
     async function fetchData() {
         try {
+            setFolderListing(undefined);
             const media = await s3.listMedia(currentFolder.key);
-            setMediaList(media);
+            setFolderListing(media);
         } catch (error) {
             console.error("Error listing media bucket", error);
         }
@@ -97,13 +98,14 @@ const MediaList: React.FC = () => {
 
     return (
         <Container>
+            <div>Current directory: {currentFolder.key}</div>
             <div>
                 {
-                    (keys === undefined)
+                    (folderListing === undefined)
                         ? <CircularProgress />
                         : <List dense={true}>
                             {upOneLevel}
-                            {keys.map(renderItem)}
+                            {folderListing.map(renderItem)}
                         </List>
                 }
             </div>
