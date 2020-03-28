@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { S3Object } from "../services/S3Service";
 import useMusicPlayer from "../hooks/useMusicPlayer";
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
@@ -6,31 +6,31 @@ import PauseIcon from '@material-ui/icons/Pause';
 
 
 const PlayerControls: React.FC = () => {
-    const { isPlaying, currentTrack, togglePlay } = useMusicPlayer();
-    return (
-        <>
-            <div className="box controls has-background-grey-dark">
-                <div className="current-track has-text-light">
-                    {currentTrack ? currentTrack.key : '(no track)'}
-                </div>
-                <div>
-                    {}
-                    {/*<button className="button has-text-light has-background-grey-dark" onClick={playPreviousTrack} disabled={!currentTrack}>
-              <FontAwesomeIcon icon={faStepBackward} />
-    </button> 
-                    <button className="button has-text-light has-background-grey-dark" onClick={togglePlay} disabled={!currentTrack}>
-                        {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
-                    </button>
-    */}
-                    {/*
+    const { isPlaying, currentTrack, playerControl } = useMusicPlayer();
+    const [url, setUrl] = useState<string | undefined>(undefined);
+    const playerRef = useRef<HTMLAudioElement>(null);
 
-            <button className="button has-text-light has-background-grey-dark" onClick={playNextTrack} disabled={!currentTrack}>
-              <FontAwesomeIcon icon={faStepForward} />
-            </button>
-            */}
-                </div>
-            </div>
-        </>
+    useEffect(() => {
+        (async function fetchUrl() {
+            console.log(`Fetch url for current track ${currentTrack}`);
+            if (currentTrack) {
+                setUrl(await currentTrack.getUrl());
+            } else {
+                setUrl(undefined);
+            }
+
+        })();
+    }, [currentTrack]);
+    console.log(`Render with url ${!url}, player ref ${playerRef}`);
+    return (
+        <div>
+            <div>{currentTrack && currentTrack.key}</div>
+            {url ? <audio ref={playerRef} src={url} crossOrigin="anonymous" autoPlay={true} controls={true}
+                onPlay={() => playerControl.setPlayingState(true)}
+                onPause={() => playerControl.setPlayingState(false)}
+                onEnded={playerControl.currentTrackHasEnded} />
+                : <>Select track</>}
+        </div>
     )
 }
 

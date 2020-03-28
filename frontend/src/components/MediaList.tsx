@@ -37,9 +37,9 @@ const OtherFileItem: React.FC<{ file: S3Object }> = ({ file }) => {
 }
 
 const AudioFileItem: React.FC<{ file: S3Object }> = ({ file }) => {
-    const { currentTrack, playTrack, isPlaying } = useMusicPlayer();
+    const { currentTrack, playerControl, isPlaying } = useMusicPlayer();
     async function clickHandler() {
-        playTrack(file);
+        playerControl.playTrack(file);
     };
 
     const isCurrentTrack = currentTrack?.key === file.key;
