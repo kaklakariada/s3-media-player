@@ -32,11 +32,10 @@ const PlayerControls: React.FC = () => {
     return (
         <div>
             <div>{currentTrack && currentTrack.key}</div>
-            {url ? <audio ref={playerRef} src={url} crossOrigin="anonymous" autoPlay={true} controls={true}
+            <audio ref={playerRef} src={url} crossOrigin="anonymous" autoPlay={true} controls={true}
                 onPlay={playerControl.onPlaying}
                 onPause={playerControl.onPause}
                 onEnded={playerControl.currentTrackHasEnded} />
-                : <>Select track</>}
         </div>
     )
 }
