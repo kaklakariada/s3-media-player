@@ -11,7 +11,8 @@ import FolderIcon from '@material-ui/icons/Folder';
 import AudiotrackIcon from '@material-ui/icons/Audiotrack';
 import InsertDriveFileIcon from '@material-ui/icons/InsertDriveFile';
 import KeyboardReturnIcon from '@material-ui/icons/KeyboardReturn';
-
+import { CardMedia } from '@material-ui/core';
+import MediaControlCard from "./MediaControlCard";
 
 
 const s3 = new S3Service();
@@ -36,14 +37,26 @@ const OtherFileItem: React.FC<{ file: S3Object }> = ({ file }) => {
 }
 
 const AudioFileItem: React.FC<{ file: S3Object }> = ({ file }) => {
-    const clickHandler = () => {
+    const [url, setUrl] = useState<string | undefined>(undefined);
+    const [loading, setLoading] = useState<boolean>(false);
+    async function clickHandler() {
+        if (url) {
+            return;
+        }
         console.log("Play file ", file);
+        setLoading(true);
+        setUrl(await s3.getUrl(file));
+        setLoading(false);
     };
+
+    if (url) {
+        return <MediaControlCard file={file} url={url} />
+    }
     return (<ListItem button onClick={clickHandler}>
         <ListItemIcon>
             <AudiotrackIcon />
         </ListItemIcon>
-        <ListItemText primary={file.key} />
+        <ListItemText primary={file.key + (loading ? ' loading...' : '')} />
     </ListItem>);
 }
 

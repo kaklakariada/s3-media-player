@@ -32,7 +32,7 @@ export class InfrastructureStack extends cdk.Stack {
       actions: ["s3:ListBucket"], resources: [mediaBucket.bucketArn]
     }));
     auth.getUserRole().addToPolicy(new PolicyStatement({
-      actions: ["s3:ListObjects"], resources: [mediaBucket.arnForObjects('*')]
+      actions: ["s3:ListObjects", "s3:GetObject"], resources: [mediaBucket.arnForObjects('*')]
     }));
   }
 }

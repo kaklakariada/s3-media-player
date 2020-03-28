@@ -30,6 +30,17 @@ export class S3Service {
         return folders.concat(objects);
     }
 
+    async getUrl(object: S3Object): Promise<string> {
+        const s3Client = await authService.getS3Client();
+        const params: any = {
+            Bucket: environment.mediaBucket,
+            Key: object.key
+        };
+        const url = await s3Client.getSignedUrlPromise('getObject', params);
+        console.debug(`Got signed url for key ${object.key}: ${url}`);
+        return url;
+    }
+
     convertObject(object: S3.Object): S3Object {
         const key = object.Key || "Unknown";
         const isFolder = key.endsWith('/');
