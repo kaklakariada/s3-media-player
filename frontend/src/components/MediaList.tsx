@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Container from "@material-ui/core/Container";
 import CircularProgress from "@material-ui/core/CircularProgress";
-import { S3Service, S3Object } from "../services/S3Service";
+import { S3Service, S3Object, S3FolderObject } from "../services/S3Service";
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -12,7 +12,7 @@ import AudiotrackIcon from '@material-ui/icons/Audiotrack';
 import InsertDriveFileIcon from '@material-ui/icons/InsertDriveFile';
 import KeyboardReturnIcon from '@material-ui/icons/KeyboardReturn';
 import { CardMedia } from '@material-ui/core';
-import MediaControlCard from "./MediaControlCard";
+import useMusicPlayer from "../hooks/useMusicPlayer";
 
 
 const s3 = new S3Service();
@@ -37,32 +37,24 @@ const OtherFileItem: React.FC<{ file: S3Object }> = ({ file }) => {
 }
 
 const AudioFileItem: React.FC<{ file: S3Object }> = ({ file }) => {
-    const [url, setUrl] = useState<string | undefined>(undefined);
-    const [loading, setLoading] = useState<boolean>(false);
+    const { currentTrack, playTrack, isPlaying } = useMusicPlayer();
     async function clickHandler() {
-        if (url) {
-            return;
-        }
-        console.log("Play file ", file);
-        setLoading(true);
-        setUrl(await s3.getUrl(file));
-        setLoading(false);
+        playTrack(file);
     };
 
-    if (url) {
-        return <MediaControlCard file={file} url={url} />
-    }
+    const isCurrentTrack = currentTrack?.key === file.key;
+    const state = isCurrentTrack ? (isPlaying ? 'playing' : 'paused') : '';
     return (<ListItem button onClick={clickHandler}>
         <ListItemIcon>
             <AudiotrackIcon />
         </ListItemIcon>
-        <ListItemText primary={file.key + (loading ? ' loading...' : '')} />
+        <ListItemText primary={file.key} secondary={state} />
     </ListItem>);
 }
 
 const MediaList: React.FC = () => {
     const [keys, setMediaList] = useState<S3Object[] | undefined>(undefined);
-    const [currentFolder, setCurrentFolder] = useState<S3Object>({ key: '', isFolder: true });
+    const [currentFolder, setCurrentFolder] = useState<S3Object>(new S3FolderObject(''));
 
     async function fetchData() {
         try {
@@ -80,9 +72,7 @@ const MediaList: React.FC = () => {
     }
 
     function upOneLevelCallback() {
-        const currentFolderWithoutTrailingSlash = currentFolder.key.substring(currentFolder.key.length - 1);
-        const parentFolderKey = currentFolderWithoutTrailingSlash.substring(0, currentFolderWithoutTrailingSlash.lastIndexOf('/'));
-        openFolderCallback({ key: parentFolderKey, isFolder: true });
+        openFolderCallback(currentFolder.getParentFolder());
     }
 
     const isAudioFile = (object: S3Object) => object.key.toLowerCase().endsWith('.mp3');

@@ -4,9 +4,78 @@ import environment from '../environment';
 
 const authService = new AuthService();
 
+
+async function getUrl(key: string): Promise<string> {
+    const s3Client = await authService.getS3Client();
+    const params: any = {
+        Bucket: environment.mediaBucket,
+        Key: key
+    };
+    const url = await s3Client.getSignedUrlPromise('getObject', params);
+    console.debug(`Got signed url for key ${key}: ${url}`);
+    return url;
+}
+
 export interface S3Object {
-    key: string;
     isFolder: boolean;
+    key: string;
+    getUrl: () => Promise<string>;
+    getParentFolder: () => S3FolderObject;
+}
+
+function getParent(path: string): S3FolderObject {
+    if (path.endsWith('/')) {
+        path = path.substr(path.length - 1);
+    }
+    const parentPath = path.substr(0, path.lastIndexOf('/'));
+    return new S3FolderObject(parentPath);
+}
+
+class S3FileObject implements S3Object {
+    object: S3.Object;
+
+    constructor(object: S3.Object) {
+        this.object = object;
+    }
+
+    async getUrl() {
+        if (this.isFolder) {
+            throw new Error(`Cannot get url for folder ${this.key}`);
+        }
+        return getUrl(this.key);
+    }
+
+    getParentFolder() {
+        return getParent(this.key);
+    }
+
+    get key() {
+        return this.object.Key || '(no key)';
+    }
+
+    get isFolder() {
+        return this.key.endsWith('/');
+    }
+}
+
+export class S3FolderObject implements S3Object {
+    key: string;
+
+    constructor(prefix: string) {
+        this.key = prefix;
+    }
+
+    async getUrl(): Promise<string> {
+        throw new Error(`Cannot get url for folder ${this.key}`);
+    }
+
+    getParentFolder() {
+        return getParent(this.key);
+    }
+
+    get isFolder() {
+        return true;
+    }
 }
 
 export class S3Service {
@@ -30,27 +99,15 @@ export class S3Service {
         return folders.concat(objects);
     }
 
-    async getUrl(object: S3Object): Promise<string> {
-        const s3Client = await authService.getS3Client();
-        const params: any = {
-            Bucket: environment.mediaBucket,
-            Key: object.key
-        };
-        const url = await s3Client.getSignedUrlPromise('getObject', params);
-        console.debug(`Got signed url for key ${object.key}: ${url}`);
-        return url;
-    }
-
     convertObject(object: S3.Object): S3Object {
-        const key = object.Key || "Unknown";
-        const isFolder = key.endsWith('/');
-        return { key, isFolder };
+        const file = new S3FileObject(object);
+        if (file.key.endsWith('/')) {
+            return new S3FolderObject(file.key);
+        }
+        return file;
     }
 
     convertCommonPrefix(prefix: S3.CommonPrefix): S3Object {
-        return {
-            key: prefix.Prefix || "Unknown",
-            isFolder: true
-        };
+        return new S3FolderObject(prefix.Prefix || '(unknown prefix)');
     }
 }
