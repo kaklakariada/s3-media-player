@@ -10,17 +10,43 @@ interface State {
     isPlaying: boolean;
 }
 
+interface PlayerCallback {
+    seekToTime: (seconds: number) => void;
+}
+
 export class PlayerControl {
     #state: State;
     #setState: StateSetter;
+    #player: PlayerCallback | undefined;
 
     constructor(state: State, setState: StateSetter) {
         this.#state = state;
         this.#setState = setState;
+        this.onPlaying = this.onPlaying.bind(this);
+        this.onPause = this.onPause.bind(this);
+        this.seekToTime = this.seekToTime.bind(this);
+    }
+
+    registerPlayer(player: PlayerCallback) {
+        this.#player = player;
     }
 
     async playTrack(track: S3Object) {
         this.#setState(state => ({ ...state, currentTrack: track }));
+    }
+
+    seekToTime(seconds: number) {
+        if (this.#player) {
+            this.#player.seekToTime(seconds);
+        }
+    }
+
+    onPlaying() {
+        this.setPlayingState(true);
+    }
+
+    onPause() {
+        this.setPlayingState(false);
     }
 
     setPlayingState(playing: boolean) {

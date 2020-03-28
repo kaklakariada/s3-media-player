@@ -10,6 +10,14 @@ const PlayerControls: React.FC = () => {
     const [url, setUrl] = useState<string | undefined>(undefined);
     const playerRef = useRef<HTMLAudioElement>(null);
 
+    playerControl.registerPlayer({
+        seekToTime: (seconds) => {
+            if (playerRef.current) {
+                playerRef.current.currentTime = seconds;
+            }
+        }
+    });
+
     useEffect(() => {
         (async function fetchUrl() {
             console.log(`Fetch url for current track ${currentTrack}`);
@@ -18,7 +26,6 @@ const PlayerControls: React.FC = () => {
             } else {
                 setUrl(undefined);
             }
-
         })();
     }, [currentTrack]);
     console.log(`Render with url ${!url}, player ref ${playerRef}`);
@@ -26,8 +33,8 @@ const PlayerControls: React.FC = () => {
         <div>
             <div>{currentTrack && currentTrack.key}</div>
             {url ? <audio ref={playerRef} src={url} crossOrigin="anonymous" autoPlay={true} controls={true}
-                onPlay={() => playerControl.setPlayingState(true)}
-                onPause={() => playerControl.setPlayingState(false)}
+                onPlay={playerControl.onPlaying}
+                onPause={playerControl.onPause}
                 onEnded={playerControl.currentTrackHasEnded} />
                 : <>Select track</>}
         </div>
