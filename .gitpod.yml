@@ -1,0 +1,5 @@
+image:
+  file: .gitpod.Dockerfile
+tasks:
+  - init: cd frontend && npm install
+    command: cd frontend && npm start
