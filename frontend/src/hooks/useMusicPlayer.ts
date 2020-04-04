@@ -1,9 +1,8 @@
 import { useContext } from 'react';
 import { MusicPlayerContext } from "../context/MusicPlayerContext";
-import { S3Object } from '../services/S3Service';
 
 const useMusicPlayer = () => {
-  const { state, setState, playerControl } = useContext(MusicPlayerContext);
+  const { state, playerControl } = useContext(MusicPlayerContext);
 
   return {
     currentTrack: state.currentTrack,

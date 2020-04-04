@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import Container from "@material-ui/core/Container";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { S3Service, S3Object, S3FolderObject } from "../services/S3Service";
@@ -11,9 +11,16 @@ import FolderIcon from '@material-ui/icons/Folder';
 import AudiotrackIcon from '@material-ui/icons/Audiotrack';
 import InsertDriveFileIcon from '@material-ui/icons/InsertDriveFile';
 import KeyboardReturnIcon from '@material-ui/icons/KeyboardReturn';
-import { CardMedia } from '@material-ui/core';
 import useMusicPlayer from "../hooks/useMusicPlayer";
 
+const useStyles = makeStyles(theme => ({
+    root: {
+        'text-align': 'left',
+        'font-family': '"Roboto", "Helvetica", "Arial", sans-serif',
+        'font-weight': 400,
+        'line-height': 1.43
+    },
+}));
 
 const s3 = new S3Service();
 
@@ -23,7 +30,7 @@ const FolderListItem: React.FC<{ folder: S3Object, openFolderCallback: (object: 
         <ListItemIcon>
             <FolderIcon />
         </ListItemIcon>
-        <ListItemText primary={folder.key} />
+        <ListItemText primary={folder.fileName} />
     </ListItem>);
 }
 
@@ -32,7 +39,7 @@ const OtherFileItem: React.FC<{ file: S3Object }> = ({ file }) => {
         <ListItemIcon>
             <InsertDriveFileIcon />
         </ListItemIcon>
-        <ListItemText primary={file.key} />
+        <ListItemText primary={file.fileName} />
     </ListItem>);
 }
 
@@ -48,24 +55,26 @@ const AudioFileItem: React.FC<{ file: S3Object }> = ({ file }) => {
         <ListItemIcon>
             <AudiotrackIcon />
         </ListItemIcon>
-        <ListItemText primary={file.key} secondary={state} />
+        <ListItemText primary={file.fileName} secondary={state} />
     </ListItem>);
 }
 
 const MediaList: React.FC = () => {
     const [folderListing, setFolderListing] = useState<S3Object[] | undefined>(undefined);
     const [currentFolder, setCurrentFolder] = useState<S3Object>(new S3FolderObject(''));
+    const classes = useStyles();
 
-    async function fetchData() {
-        try {
-            setFolderListing(undefined);
-            const media = await s3.listMedia(currentFolder.key);
-            setFolderListing(media);
-        } catch (error) {
-            console.error("Error listing media bucket", error);
-        }
-    }
-    useEffect(() => { fetchData(); }, [currentFolder]);
+    useEffect(() => {
+        (async function fetchData() {
+            try {
+                setFolderListing(undefined);
+                const media = await s3.listMedia(currentFolder.key);
+                setFolderListing(media);
+            } catch (error) {
+                console.error("Error listing media bucket", error);
+            }
+        })();
+    }, [currentFolder]);
 
     function openFolderCallback(object: S3Object) {
         console.log("Open folder ", object);
@@ -97,8 +106,8 @@ const MediaList: React.FC = () => {
     </ListItem>);
 
     return (
-        <Container>
-            <div>Current directory: {currentFolder.key}</div>
+        <Container className={classes.root}>
+            <div>Current directory: {'/' + currentFolder.key}</div>
             <div>
                 {
                     (folderListing === undefined)

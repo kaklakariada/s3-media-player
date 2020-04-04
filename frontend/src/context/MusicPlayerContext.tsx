@@ -14,6 +14,10 @@ interface PlayerCallback {
     seekToTime: (seconds: number) => void;
 }
 
+type StateSetter = React.Dispatch<React.SetStateAction<State>>;
+
+
+
 export class PlayerControl {
     #state: State;
     #setState: StateSetter;
@@ -58,14 +62,11 @@ export class PlayerControl {
     }
 }
 
-type StateSetter = React.Dispatch<React.SetStateAction<State>>;
-
 interface Context {
     state: State;
     setState: StateSetter;
     playerControl: PlayerControl;
 }
-
 const initialContext: Context = createDefaultContext();
 const MusicPlayerContext = React.createContext(initialContext);
 

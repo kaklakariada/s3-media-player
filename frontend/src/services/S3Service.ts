@@ -4,31 +4,45 @@ import environment from '../environment';
 
 const authService = new AuthService();
 
-
 async function getUrl(key: string): Promise<string> {
     const s3Client = await authService.getS3Client();
+    const validForSeconds = 5 * 60 * 60;
     const params: any = {
         Bucket: environment.mediaBucket,
-        Key: key
+        Key: key,
+        Expires: validForSeconds
     };
-    const url = await s3Client.getSignedUrlPromise('getObject', params);
-    console.debug(`Got signed url for key ${key}: ${url}`);
-    return url;
+    return await s3Client.getSignedUrlPromise('getObject', params);
 }
 
-export interface S3Object {
+export interface S3Folder {
     isFolder: boolean;
     key: string;
-    getUrl: () => Promise<string>;
-    getParentFolder: () => S3FolderObject;
+    fileName: string;
+    getParentFolder: () => S3Folder;
 }
 
-function getParent(path: string): S3FolderObject {
+export interface S3Object extends S3Folder {
+    getUrl: () => Promise<string>;
+}
+
+function getParent(path: string): S3Folder {
     if (path.endsWith('/')) {
         path = path.substr(0, path.length - 1);
     }
     const parentPath = path.substr(0, path.lastIndexOf('/') + 1);
     return new S3FolderObject(parentPath);
+}
+
+function getFileName(path: string): string {
+    if (path.endsWith('/')) {
+        path = path.substring(0, path.length - 1);
+    }
+    const indexOfLastSlash = path.lastIndexOf('/');
+    if (indexOfLastSlash >= 0) {
+        path = path.substring(indexOfLastSlash + 1, path.length);
+    }
+    return path;
 }
 
 class S3FileObject implements S3Object {
@@ -56,6 +70,10 @@ class S3FileObject implements S3Object {
     get isFolder() {
         return this.key.endsWith('/');
     }
+
+    get fileName() {
+        return getFileName(this.key);
+    }
 }
 
 export class S3FolderObject implements S3Object {
@@ -75,6 +93,10 @@ export class S3FolderObject implements S3Object {
 
     get isFolder() {
         return true;
+    }
+
+    get fileName() {
+        return getFileName(this.key);
     }
 }
 
