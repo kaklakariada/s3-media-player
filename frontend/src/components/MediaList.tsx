@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { makeStyles } from '@material-ui/core/styles';
 import Container from "@material-ui/core/Container";
 import CircularProgress from "@material-ui/core/CircularProgress";
-import { S3Service, S3Object, S3FolderObject } from "../services/S3Service";
+import { S3Service, S3Object, S3FolderObject, S3Folder } from "../services/S3Service";
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -61,7 +61,7 @@ const AudioFileItem: React.FC<{ file: S3Object }> = ({ file }) => {
 
 const MediaList: React.FC = () => {
     const [folderListing, setFolderListing] = useState<S3Object[] | undefined>(undefined);
-    const [currentFolder, setCurrentFolder] = useState<S3Object>(new S3FolderObject(''));
+    const [currentFolder, setCurrentFolder] = useState<S3Folder>(new S3FolderObject(''));
     const classes = useStyles();
 
     useEffect(() => {
@@ -76,7 +76,7 @@ const MediaList: React.FC = () => {
         })();
     }, [currentFolder]);
 
-    function openFolderCallback(object: S3Object) {
+    function openFolderCallback(object: S3Folder) {
         console.log("Open folder ", object);
         setCurrentFolder(object);
     }
@@ -96,7 +96,6 @@ const MediaList: React.FC = () => {
         }
         return <OtherFileItem key={object.key} file={object} />
     }
-
 
     const upOneLevel: JSX.Element = (<ListItem button onClick={upOneLevelCallback} disabled={currentFolder.key === ''}>
         <ListItemIcon>

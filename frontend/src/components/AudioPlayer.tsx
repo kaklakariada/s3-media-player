@@ -2,6 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from "@material-ui/core/Container";
 import useMusicPlayer from "../hooks/useMusicPlayer";
+import IconButton from '@material-ui/core/IconButton';
+import FastForwardIcon from '@material-ui/icons/FastForward';
+import FastRewindIcon from '@material-ui/icons/FastRewind';
+import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import PauseIcon from '@material-ui/icons/Pause';
+import Typography from '@material-ui/core/Typography';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -16,7 +22,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const PlayerControls: React.FC = () => {
-    const { currentTrack, playerControl } = useMusicPlayer();
+    const { currentTrack, playerControl, isPlaying } = useMusicPlayer();
     const [url, setUrl] = useState<string | undefined>(undefined);
     const playerRef = useRef<HTMLAudioElement>(null);
     const classes = useStyles();
@@ -39,10 +45,36 @@ const PlayerControls: React.FC = () => {
             }
         })();
     }, [currentTrack]);
-    console.log(`Render with url ${!url}, player ref ${playerRef}`);
+
+    function skip(skipSeconds: number) {
+        if (playerRef.current) {
+            const currentTime = playerRef.current.currentTime;
+            playerRef.current.currentTime = currentTime + skipSeconds;
+        }
+    }
+
+    function fastRewind() {
+        skip(-60);
+    }
+
+    function fastForward() {
+        skip(60);
+    }
+
     return (
         <Container className={classes.root}>
-            <div>Current track: {currentTrack && currentTrack.key}</div>
+            <Typography>Current track: /{currentTrack && currentTrack.key}</Typography>
+            <div>
+                <IconButton onClick={fastRewind} disabled={!isPlaying}>
+                    <FastRewindIcon />
+                </IconButton>
+                <IconButton onClick={playerControl.togglePlayPause} disabled={true}>
+                    {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
+                </IconButton>
+                <IconButton onClick={fastForward} disabled={!isPlaying}>
+                    <FastForwardIcon />
+                </IconButton>
+            </div>
             <audio ref={playerRef} className={classes.player} src={url} crossOrigin="anonymous" autoPlay={true} controls={true}
                 onPlay={playerControl.onPlaying}
                 onPause={playerControl.onPause}

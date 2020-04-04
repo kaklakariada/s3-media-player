@@ -16,8 +16,6 @@ interface PlayerCallback {
 
 type StateSetter = React.Dispatch<React.SetStateAction<State>>;
 
-
-
 export class PlayerControl {
     #state: State;
     #setState: StateSetter;
@@ -29,6 +27,7 @@ export class PlayerControl {
         this.onPlaying = this.onPlaying.bind(this);
         this.onPause = this.onPause.bind(this);
         this.seekToTime = this.seekToTime.bind(this);
+        this.togglePlayPause = this.togglePlayPause.bind(this);
     }
 
     registerPlayer(player: PlayerCallback) {
@@ -53,6 +52,10 @@ export class PlayerControl {
         this.setPlayingState(false);
     }
 
+    togglePlayPause() {
+        this.setPlayingState(!this.#state.isPlaying);
+    }
+    
     setPlayingState(playing: boolean) {
         this.#setState(state => ({ ...state, isPlaying: playing }));
     }
