@@ -58,8 +58,24 @@ Add the following CORS configuration to `my-media-bucket`:
         <AllowedOrigin>*</AllowedOrigin>
         <AllowedMethod>GET</AllowedMethod>
         <AllowedHeader>*</AllowedHeader>
+        <MaxAgeSeconds>3000</MaxAgeSeconds>
     </CORSRule>
 </CORSConfiguration>
+```
+
+You can do this by executing the following command:
+
+```bash
+aws s3api put-bucket-cors --bucket my-media-bucket --cors-configuration '{
+  "CORSRules": [
+    {
+      "AllowedOrigins": ["*"],
+      "AllowedHeaders": ["*"],
+      "AllowedMethods": ["GET"],
+      "MaxAgeSeconds": 3000
+    }
+  ]
+}'
 ```
 
 ### Deploy infrastructure
