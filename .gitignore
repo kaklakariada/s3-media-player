@@ -1,2 +1,3 @@
 /infrastructure/infrastructure-config.ts
+/frontend/src/frontend-config.ts
 /frontend/deploy/deploy-config.js
