@@ -1,0 +1,64 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/cache@v1
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+
+    - name: Configure infrastructure
+      run: |
+        cat > infrastructure/infrastructure-config.ts << EOF
+        import { InfrastructureConfig } from "./lib/infrastructure-config-interface";
+
+        export const CONFIG: InfrastructureConfig = {
+            stackName: "s3-media-player",
+            region: "eu-west-1",
+            domain: "media.example.com",
+            hostedZoneName: "example.com.",
+            sslCertificateArn: "arn:aws:acm:us-east-1:000000000000:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+            contactEmailAddress: "admin@example.com",
+            mediaBucket: "my-media-bucket"
+        };
+        EOF
+
+    - name: Build infrastructure
+      run: |
+        cd infrastructure
+        npm ci
+        npm run cdk synth
+
+    - name: Configure frontend
+      run: |
+        cat > frontend/src/frontend-config.ts << EOF
+        import { FrontendConfig } from "./environment";
+
+        export const CONFIG: FrontendConfig = {
+            region: "eu-west-1",
+            cognitoIdentityPoolId: "eu-west-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+            cognitoUserPoolId: "eu-west-1_xxxxxxxxx",
+            cognitoUserPoolWebClientId: "xxxxxxxxxxxxxxxxxxxxxxxxxx",
+            mediaBucket: "my-media-bucket"
+        };
+        EOF
+
+    - name: Build frontend
+      run: |
+        cd frontend
+        npm ci
+        npm run build
