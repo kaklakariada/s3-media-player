@@ -1,21 +1,29 @@
 import React from 'react';
-import { withAuthenticator } from "aws-amplify-react";
+import { AmplifyAuthenticator } from '@aws-amplify/ui-react';
+import { makeStyles } from "@material-ui/core/styles";
 import './App.css';
 import MediaList from './components/MediaList';
 import { MusicPlayerProvider } from './context/MusicPlayerContext';
 import PlayerControls from './components/AudioPlayer';
 
+const useStyles = makeStyles(theme => ({
+  authenticator: {
+    'text-align': 'center'
+  }
+}));
+
 function App() {
+  const classes = useStyles();
   return (
-    <MusicPlayerProvider>
-      <div className="App">
-        <PlayerControls />
-        <MediaList />
-      </div>
-    </MusicPlayerProvider>
+    <AmplifyAuthenticator usernameAlias="username" className={classes.authenticator}>
+      <MusicPlayerProvider>
+        <div className="App">
+          <PlayerControls />
+          <MediaList />
+        </div>
+      </MusicPlayerProvider>
+    </AmplifyAuthenticator>
   );
 }
 
-const AuthenticatedApp = withAuthenticator(App, false);
-
-export default AuthenticatedApp;
+export default App;
