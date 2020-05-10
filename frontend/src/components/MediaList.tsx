@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { makeStyles } from '@material-ui/core/styles';
 import Container from "@material-ui/core/Container";
 import CircularProgress from "@material-ui/core/CircularProgress";
-import { S3Service, S3Object, S3FolderObject } from "../services/S3Service";
+import { S3Service, S3Object } from "../services/S3Service";
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -35,15 +35,10 @@ const OtherFileItem: React.FC<{ file: S3Object }> = ({ file }) => {
 }
 
 const AudioFileItem: React.FC<{ file: S3Object }> = ({ file }) => {
-    const { currentTrack, playerControl, isPlaying } = useMusicPlayer();
-    async function clickHandler() {
-        console.debug(`Audio file clicked: ${file.key}`, file);
-        playerControl.playTrack(file);
-    };
-
+    const { currentTrack, isPlaying } = useMusicPlayer();
     const isCurrentTrack = currentTrack?.key === file.key;
     const state = isCurrentTrack ? (isPlaying ? 'playing' : 'paused') : '';
-    return (<ListItem button onClick={clickHandler}>
+    return (<ListItem button component={Link} to={`/${file.key}`}>
         <ListItemIcon>
             <AudiotrackIcon />
         </ListItemIcon>
@@ -61,25 +56,36 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const MediaList: React.FC<{ path: string }> = ({ path }) => {
-    console.debug(`Render MediaList for path '${path}'`);
     const [folderListing, setFolderListing] = useState<S3Object[] | undefined>(undefined);
-    const currentFolder = new S3FolderObject(path);
+    const { playerControl } = useMusicPlayer();
+
+    const isFolder = path === '' || path.indexOf('/') < 0 || path.endsWith('/');
+    const folderPath = isFolder ? path : path.substr(0, path.lastIndexOf('/') + 1);
+    const currentFolder = s3.getFolder(folderPath);
+
     const classes = useStyles();
 
     useEffect(() => {
         (async function fetchData() {
             setFolderListing(undefined);
-            console.debug(`Fetching list for ${currentFolder.key}`);
             try {
                 const media = await s3.listMedia(currentFolder.key);
-                console.debug(`Got list for '${currentFolder.key}': ${media.length} items`, media);
                 setFolderListing(media);
             } catch (error) {
                 console.error("Error listing media bucket", error);
                 setFolderListing([]);
             }
         })();
-    }, [path]);
+    }, [currentFolder.key]);
+
+    useEffect(() => {
+        (async function fetchData() {
+            if (!isFolder) {
+                const file = await s3.getObject(path);
+                playerControl.playTrack(file);
+            }
+        })();
+    }, [isFolder, path]);
 
     const isAudioFile = (object: S3Object) => object.key.toLowerCase().endsWith('.mp3');
 
@@ -94,7 +100,6 @@ const MediaList: React.FC<{ path: string }> = ({ path }) => {
     }
 
     const parentPath = `/${currentFolder.getParentFolder().key}`;
-    console.debug(`Parent path: ${parentPath}`);
     const upOneLevel: JSX.Element = (
         <ListItem button component={Link} to={parentPath} disabled={currentFolder.key === ''}>
             <ListItemIcon >

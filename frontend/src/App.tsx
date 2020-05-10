@@ -29,6 +29,9 @@ function App() {
             <PlayerControls />
           </div>
           <Switch>
+            <Route exact path="/">
+              <MediaList path="" />
+            </Route>
             <Route path="/:path" children={<RouterChild />} />
           </Switch>
         </Router>

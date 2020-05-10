@@ -121,6 +121,14 @@ export class S3Service {
         return folders.concat(objects).filter(o => o.key !== prefix);
     }
 
+    async getObject(key: string): Promise<S3Object> {
+        return new S3FileObject(environment.mediaBucket, key);
+    }
+    
+    getFolder(prefix: string): S3Folder {
+        return new S3FolderObject(environment.mediaBucket, prefix);
+    }
+
     convertObject(object: S3.Object): S3Object {
         const file = new S3FileObject(object);
         if (file.key.endsWith('/')) {

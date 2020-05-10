@@ -37,7 +37,6 @@ const PlayerControls: React.FC = () => {
 
     useEffect(() => {
         (async function fetchUrl() {
-            console.log(`Fetch url for current track ${currentTrack}`);
             if (currentTrack) {
                 setUrl(await currentTrack.getUrl());
             } else {
