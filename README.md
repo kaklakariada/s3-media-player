@@ -1,6 +1,8 @@
 # s3-media-player
 Play music stored in an S3 bucket
 
+[![Build](https://github.com/kaklakariada/s3-media-player/workflows/Build/badge.svg)](https://github.com/kaklakariada/s3-media-player/actions?query=workflow%3ABuild)
+
 ## Architecture
 
 S3 Media Player uses the following technologies:
