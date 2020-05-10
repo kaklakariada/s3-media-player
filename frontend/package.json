@@ -15,6 +15,7 @@
     "@types/react-dom": "^16.9.7",
     "aws-amplify": "^3.0.10",
     "aws-sdk": "^2.673.0",
+    "immer": "^6.0.5",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
