@@ -1,6 +1,7 @@
 import React from 'react';
 import { AmplifyAuthenticator } from '@aws-amplify/ui-react';
 import { makeStyles } from "@material-ui/core/styles";
+import { HashRouter as Router, Route, Switch, useLocation } from "react-router-dom";
 import './App.css';
 import MediaList from './components/MediaList';
 import { MusicPlayerProvider } from './context/MusicPlayerContext';
@@ -12,15 +13,25 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
+const RouterChild: React.FC = () => {
+  let { pathname } = useLocation();
+  const path = pathname.startsWith('/') ? pathname.substr(1) : pathname;
+  return (<MediaList path={path} />);
+}
+
 function App() {
   const classes = useStyles();
   return (
     <AmplifyAuthenticator usernameAlias="username" className={classes.authenticator}>
       <MusicPlayerProvider>
-        <div className="App">
-          <PlayerControls />
-          <MediaList />
-        </div>
+        <Router>
+          <div className="App">
+            <PlayerControls />
+          </div>
+          <Switch>
+            <Route path="/:path" children={<RouterChild />} />
+          </Switch>
+        </Router>
       </MusicPlayerProvider>
     </AmplifyAuthenticator>
   );
