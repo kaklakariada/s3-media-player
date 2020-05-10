@@ -18,6 +18,7 @@ async function getUrl(key: string): Promise<string> {
 export interface S3Folder {
     isFolder: boolean;
     key: string;
+    bucket: string;
     fileName: string;
     getParentFolder: () => S3Folder;
 }
@@ -26,12 +27,13 @@ export interface S3Object extends S3Folder {
     getUrl: () => Promise<string>;
 }
 
-function getParent(path: string): S3Folder {
+function getParent(object: S3Folder): S3Folder {
+    let path = object.key;
     if (path.endsWith('/')) {
         path = path.substr(0, path.length - 1);
     }
     const parentPath = path.substr(0, path.lastIndexOf('/') + 1);
-    return new S3FolderObject(parentPath);
+    return new S3FolderObject(object.bucket, parentPath);
 }
 
 function getFileName(path: string): string {
@@ -46,10 +48,12 @@ function getFileName(path: string): string {
 }
 
 class S3FileObject implements S3Object {
-    object: S3.Object;
+    bucket: string;
+    key: string;
 
-    constructor(object: S3.Object) {
-        this.object = object;
+    constructor(bucket: string, key: string) {
+        this.bucket = bucket;
+        this.key = key;
     }
 
     async getUrl() {
@@ -59,12 +63,8 @@ class S3FileObject implements S3Object {
         return getUrl(this.key);
     }
 
-    getParentFolder() {
-        return getParent(this.key);
-    }
-
-    get key() {
-        return this.object.Key || '(no key)';
+    getParentFolder() : S3Folder {
+        return getParent(this);
     }
 
     get isFolder() {
@@ -76,10 +76,12 @@ class S3FileObject implements S3Object {
     }
 }
 
-export class S3FolderObject implements S3Object {
+class S3FolderObject implements S3Object {
+    bucket: string;
     key: string;
 
-    constructor(prefix: string) {
+    constructor(bucket: string, prefix: string) {
+        this.bucket = bucket;
         this.key = prefix;
     }
 
@@ -88,7 +90,7 @@ export class S3FolderObject implements S3Object {
     }
 
     getParentFolder() {
-        return getParent(this.key);
+        return getParent(this);
     }
 
     get isFolder() {
@@ -130,14 +132,14 @@ export class S3Service {
     }
 
     convertObject(object: S3.Object): S3Object {
-        const file = new S3FileObject(object);
+        const file = new S3FileObject(environment.mediaBucket, object.Key || '(no key)');
         if (file.key.endsWith('/')) {
-            return new S3FolderObject(file.key);
+            return new S3FolderObject(environment.mediaBucket, file.key);
         }
         return file;
     }
 
     convertCommonPrefix(prefix: S3.CommonPrefix): S3Object {
-        return new S3FolderObject(prefix.Prefix || '(unknown prefix)');
+        return new S3FolderObject(environment.mediaBucket, prefix.Prefix || '(unknown prefix)');
     }
 }
