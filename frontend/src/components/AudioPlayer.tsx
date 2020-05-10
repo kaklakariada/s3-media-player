@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from "react-router-dom";
 import { makeStyles } from '@material-ui/core/styles';
 import Container from "@material-ui/core/Container";
 import useMusicPlayer from "../hooks/useMusicPlayer";
@@ -60,9 +61,10 @@ const PlayerControls: React.FC = () => {
         skip(60);
     }
 
+    const currentTrackKey = currentTrack ? `/${currentTrack.key}` : '/';
     return (
         <Container className={classes.root}>
-            <Typography>Current track: /{currentTrack && currentTrack.key}</Typography>
+            <Typography>Current track: <Link to={currentTrackKey}>{currentTrackKey}</Link></Typography>
             <div>
                 <IconButton onClick={fastRewind} disabled={!isPlaying}>
                     <FastRewindIcon />

@@ -57,11 +57,12 @@ const useStyles = makeStyles(theme => ({
 
 const MediaList: React.FC<{ path: string }> = ({ path }) => {
     const [folderListing, setFolderListing] = useState<S3Object[] | undefined>(undefined);
-    const { playerControl } = useMusicPlayer();
+    const { playerControl, currentTrack } = useMusicPlayer();
 
     const isFolder = path === '' || path.indexOf('/') < 0 || path.endsWith('/');
     const folderPath = isFolder ? path : path.substr(0, path.lastIndexOf('/') + 1);
     const currentFolder = s3.getFolder(folderPath);
+    const startPlaying = !isFolder && (!currentTrack || currentTrack.key !== path);
 
     const classes = useStyles();
 
@@ -80,12 +81,13 @@ const MediaList: React.FC<{ path: string }> = ({ path }) => {
 
     useEffect(() => {
         (async function fetchData() {
-            if (!isFolder) {
+            if (startPlaying) {
                 const file = await s3.getObject(path);
                 playerControl.playTrack(file);
             }
         })();
-    }, [isFolder, path]);
+        // eslint-disable-next-line
+    }, [startPlaying, path]);
 
     const isAudioFile = (object: S3Object) => object.key.toLowerCase().endsWith('.mp3');
 
