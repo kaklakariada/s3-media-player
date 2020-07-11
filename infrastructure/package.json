@@ -11,20 +11,20 @@
     "cdk": "cdk"
   },
   "devDependencies": {
-    "@aws-cdk/assert": "1.38.0",
-    "@types/jest": "^25.2.1",
-    "@types/node": "13.13.5",
-    "jest": "^26.0.1",
-    "ts-jest": "^25.5.1",
-    "aws-cdk": "1.38.0",
-    "ts-node": "^8.10.1",
-    "typescript": "~3.8.3"
+    "@aws-cdk/assert": "1.51.0",
+    "@types/jest": "^26.0.4",
+    "@types/node": "14.0.22",
+    "jest": "^26.1.0",
+    "ts-jest": "^26.1.1",
+    "aws-cdk": "1.51.0",
+    "ts-node": "^8.10.2",
+    "typescript": "~3.9.6"
   },
   "dependencies": {
-    "@aws-cdk/aws-cloudfront": "^1.38.0",
-    "@aws-cdk/aws-cognito": "^1.38.0",
-    "@aws-cdk/aws-s3": "^1.38.0",
-    "@aws-cdk/core": "1.38.0",
+    "@aws-cdk/aws-cloudfront": "^1.51.0",
+    "@aws-cdk/aws-cognito": "^1.51.0",
+    "@aws-cdk/aws-s3": "^1.51.0",
+    "@aws-cdk/core": "1.51.0",
     "source-map-support": "^0.5.19"
   }
 }
