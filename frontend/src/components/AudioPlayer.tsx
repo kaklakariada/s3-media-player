@@ -9,6 +9,7 @@ import FastRewindIcon from '@material-ui/icons/FastRewind';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import PauseIcon from '@material-ui/icons/Pause';
 import Typography from '@material-ui/core/Typography';
+import { S3Object } from '../services/S3Service';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -36,14 +37,16 @@ const PlayerControls: React.FC = () => {
         }
     });
 
+    async function updateUrl(track: S3Object | undefined) {
+        if (track) {
+            setUrl(await track.getUrl());
+        } else {
+            setUrl(undefined);
+        }
+    }
+
     useEffect(() => {
-        (async function fetchUrl() {
-            if (currentTrack) {
-                setUrl(await currentTrack.getUrl());
-            } else {
-                setUrl(undefined);
-            }
-        })();
+        updateUrl(currentTrack);
     }, [currentTrack]);
 
     function skip(skipSeconds: number) {
@@ -61,7 +64,8 @@ const PlayerControls: React.FC = () => {
         skip(60);
     }
 
-    const currentTrackKey = currentTrack ? `/${currentTrack.key}` : '/';
+    const timeParam = playerRef.current ? `&time=${Math.trunc(playerRef.current.currentTime)}` : '';
+    const currentTrackKey = currentTrack ? `/${currentTrack.key}${timeParam}` : '/';
     return (
         <Container className={classes.root}>
             <Typography>Current track: <Link to={currentTrackKey}>{currentTrackKey}</Link></Typography>

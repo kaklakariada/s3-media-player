@@ -55,7 +55,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const MediaList: React.FC<{ path: string }> = ({ path }) => {
+const MediaList: React.FC<{ path: string, time: number | undefined }> = ({ path, time }) => {
     const [folderListing, setFolderListing] = useState<S3Object[] | undefined>(undefined);
     const { playerControl, currentTrack } = useMusicPlayer();
 
@@ -84,6 +84,9 @@ const MediaList: React.FC<{ path: string }> = ({ path }) => {
             if (startPlaying) {
                 const file = await s3.getObject(path);
                 playerControl.playTrack(file);
+                if (time) {
+                    playerControl.seekToTime(time);
+                }
             }
         })();
         // eslint-disable-next-line

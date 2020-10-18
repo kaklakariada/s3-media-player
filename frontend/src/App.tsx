@@ -15,8 +15,19 @@ const useStyles = makeStyles(theme => ({
 
 const RouterChild: React.FC = () => {
   let { pathname } = useLocation();
-  const path = pathname.startsWith('/') ? pathname.substr(1) : pathname;
-  return (<MediaList path={path} />);
+  const { path, time } = parsePath(pathname);
+  return (<MediaList path={path} time={time} />);
+}
+
+function parsePath(pathname: string) {
+  let path = pathname.startsWith('/') ? pathname.substr(1) : pathname;
+  const matcher = path.match(/\/?([^&]+)(&time=(\d+))?/);
+  if (!matcher) {
+    console.warn(`Error parsing path '${pathname}'`);
+    return { path: '/' };
+  }
+  const time = matcher[3] ? parseFloat(matcher[3]) : undefined;
+  return { path: matcher[1], time };
 }
 
 function App() {
@@ -32,6 +43,7 @@ function App() {
             <Route exact path="/">
               <MediaList path="" />
             </Route>
+            <Route path="/:path&time=:time" children={<RouterChild />} />
             <Route path="/:path" children={<RouterChild />} />
           </Switch>
         </Router>
