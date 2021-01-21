@@ -16,7 +16,7 @@
     "@types/react-router-dom": "^5.1.6",
     "aws-amplify": "^3.3.4",
     "aws-sdk": "^2.773.0",
-    "immer": "^7.0.9",
+    "immer": "^8.0.1",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "react-router-dom": "^5.2.0",
