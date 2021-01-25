@@ -55,7 +55,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const MediaList: React.FC<{ path: string, time: number | undefined }> = ({ path, time }) => {
+const MediaList: React.FC<{ path: string, time?: number }> = ({ path, time }) => {
     const [folderListing, setFolderListing] = useState<S3Object[] | undefined>(undefined);
     const { playerControl, currentTrack } = useMusicPlayer();
 
@@ -89,8 +89,7 @@ const MediaList: React.FC<{ path: string, time: number | undefined }> = ({ path,
                 }
             }
         })();
-        // eslint-disable-next-line
-    }, [startPlaying, path]);
+    }, [startPlaying, path, time, playerControl]);
 
     const isAudioFile = (object: S3Object) => object.key.toLowerCase().endsWith('.mp3');
 
