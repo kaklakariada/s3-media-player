@@ -9,7 +9,7 @@ import FastRewindIcon from '@material-ui/icons/FastRewind';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import PauseIcon from '@material-ui/icons/Pause';
 import Typography from '@material-ui/core/Typography';
-import { S3Object } from '../services/S3Service';
+import { PlaylistItem } from '../services/PlaylistService';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -34,12 +34,18 @@ const PlayerControls: React.FC = () => {
             if (playerRef.current) {
                 playerRef.current.currentTime = seconds;
             }
-        }
+        },
+        play: () => {
+            playerRef.current?.play();
+        },
+        pause: () => {
+            playerRef.current?.pause();
+        },
     });
 
-    async function updateUrl(track: S3Object | undefined) {
+    async function updateUrl(track: PlaylistItem | undefined) {
         if (track) {
-            setUrl(await track.getUrl());
+            setUrl(await track.track.getUrl());
         } else {
             setUrl(undefined);
         }
@@ -65,7 +71,7 @@ const PlayerControls: React.FC = () => {
     }
 
     const timeParam = playerRef.current ? `&time=${Math.trunc(playerRef.current.currentTime)}` : '';
-    const currentTrackKey = currentTrack ? `/${currentTrack.key}${timeParam}` : '/';
+    const currentTrackKey = currentTrack ? `/${currentTrack.track.key}${timeParam}` : '/';
     return (
         <Container className={classes.root}>
             <Typography>Current track: <Link to={currentTrackKey}>{currentTrackKey}</Link></Typography>
@@ -73,7 +79,7 @@ const PlayerControls: React.FC = () => {
                 <IconButton onClick={fastRewind} disabled={!isPlaying}>
                     <FastRewindIcon />
                 </IconButton>
-                <IconButton onClick={playerControl.togglePlayPause} disabled={true}>
+                <IconButton onClick={playerControl.togglePlayPause}>
                     {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
                 </IconButton>
                 <IconButton onClick={fastForward} disabled={!isPlaying}>

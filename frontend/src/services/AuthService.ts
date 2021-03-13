@@ -1,15 +1,7 @@
 import { Auth } from "aws-amplify";
-import S3 from 'aws-sdk/clients/s3';
 import { CognitoUserSession } from "amazon-cognito-identity-js";
-import environment from '../environment';
 
-interface EssentialCredentials {
-    accessKeyId: any;
-    sessionToken: any;
-    secretAccessKey: any;
-    identityId: any;
-    authenticated: any;
-}
+import { ICredentials } from '@aws-amplify/core';
 
 interface AuthData {
     id: string;
@@ -24,12 +16,9 @@ export class AuthService {
         return Auth.currentAuthenticatedUser();
     }
 
-    getCredentials(): Promise<EssentialCredentials> {
+    getCredentials(): Promise<ICredentials> {
         return Auth.currentUserCredentials()
-            .then((cred) => {
-                const essentialCredentials = Auth.essentialCredentials(cred);
-                return essentialCredentials;
-            })
+            .then((cred) => Auth.essentialCredentials(cred))
             .catch((err: any) => {
                 console.error("Error getting credentials", err);
                 throw new Error(err);
@@ -39,20 +28,6 @@ export class AuthService {
     async getIdToken(): Promise<string> {
         const cred = await this.currentAuthenticatedUser();
         return cred.signInUserSession.getIdToken().getJwtToken();
-    }
-
-    s3Client: S3 | undefined = undefined;
-
-    async getS3Client(): Promise<S3> {
-        if (!this.s3Client) {
-            const credentials = await this.getCredentials();
-            const s3Config: S3.Types.ClientConfiguration = {
-                region: environment.region,
-                credentials: credentials
-            };
-            this.s3Client = new S3(s3Config);
-        }
-        return this.s3Client;
     }
 
     signOut() {

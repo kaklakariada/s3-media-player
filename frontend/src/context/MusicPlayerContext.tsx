@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
-import { S3Object } from '../services/S3Service';
+import { PlaylistItem } from '../services/PlaylistService';
 
 interface Props {
     children: JSX.Element
 }
 
 interface State {
-    currentTrack: S3Object | undefined;
+    currentTrack: PlaylistItem | undefined;
     isPlaying: boolean;
 }
 
 interface PlayerCallback {
     seekToTime: (seconds: number) => void;
+    play: () => void;
+    pause: () => void;
 }
 
 type StateSetter = React.Dispatch<React.SetStateAction<State>>;
@@ -34,7 +36,7 @@ export class PlayerControl {
         this.#player = player;
     }
 
-    async playTrack(track: S3Object) {
+    async playTrack(track: PlaylistItem) {
         this.#setState(state => ({ ...state, currentTrack: track }));
     }
 
@@ -61,7 +63,13 @@ export class PlayerControl {
     }
 
     currentTrackHasEnded() {
-        console.log("Playback has finished, find next track!");
+        const next = this.#state.currentTrack?.next;
+        if(next) {
+            console.log("Playback has finished, playing next ", next);
+            this.#setState(state => ({...state, currentTrack: next}))
+        } else {
+            console.log("Playback has finished, end of playlist.");
+        }
     }
 }
 

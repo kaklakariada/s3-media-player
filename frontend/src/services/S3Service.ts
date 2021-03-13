@@ -1,18 +1,13 @@
 import S3, { Bucket, ListObjectsV2Request } from 'aws-sdk/clients/s3';
 import { AuthService } from './AuthService';
 import environment from '../environment';
+import { S3Client } from './AuthenticatedS3Client';
 
-const authService = new AuthService();
+const s3Client = new S3Client(new AuthService());
 
 async function getUrl(key: string): Promise<string> {
-    const s3Client = await authService.getS3Client();
     const validForSeconds = 5 * 60 * 60;
-    const params: any = {
-        Bucket: environment.mediaBucket,
-        Key: key,
-        Expires: validForSeconds
-    };
-    return await s3Client.getSignedUrlPromise('getObject', params);
+    return await s3Client.getSignedUrl('getObject', key, validForSeconds);
 }
 
 export interface S3Folder {
@@ -63,7 +58,7 @@ class S3FileObject implements S3Object {
         return getUrl(this.key);
     }
 
-    getParentFolder() : S3Folder {
+    getParentFolder(): S3Folder {
         return getParent(this);
     }
 
@@ -104,20 +99,18 @@ class S3FolderObject implements S3Object {
 
 export class S3Service {
     async listBuckets(): Promise<string[]> {
-        const s3Client = await authService.getS3Client();
-        const response = await s3Client.listBuckets().promise();
+        const response = await s3Client.listBuckets();
         const buckets: Bucket[] = response.Buckets || [];
         return buckets.map(b => b.Name || "(unknown bucket)");
     }
 
     async listMedia(prefix: string): Promise<S3Object[]> {
-        const s3Client = await authService.getS3Client();
         const params: ListObjectsV2Request = {
             Bucket: environment.mediaBucket,
             Delimiter: '/',
             Prefix: prefix
         };
-        const response = await s3Client.listObjectsV2(params).promise();
+        const response = await s3Client.listObjectsV2(params);
         const folders: S3Object[] = response.CommonPrefixes?.map(this.convertCommonPrefix) || [];
         const objects: S3Object[] = response.Contents?.map(this.convertObject) || [];
         return folders.concat(objects).filter(o => o.key !== prefix);
@@ -126,7 +119,7 @@ export class S3Service {
     async getObject(key: string): Promise<S3Object> {
         return new S3FileObject(environment.mediaBucket, key);
     }
-    
+
     getFolder(prefix: string): S3Folder {
         return new S3FolderObject(environment.mediaBucket, prefix);
     }

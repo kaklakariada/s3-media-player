@@ -13,8 +13,10 @@ import AudiotrackIcon from '@material-ui/icons/Audiotrack';
 import InsertDriveFileIcon from '@material-ui/icons/InsertDriveFile';
 import KeyboardReturnIcon from '@material-ui/icons/KeyboardReturn';
 import useMusicPlayer from "../hooks/useMusicPlayer";
+import { Playlist, PlaylistItem, PlaylistService } from "../services/PlaylistService";
 
 const s3 = new S3Service();
+const playlistService = new PlaylistService();
 
 const FolderListItem: React.FC<{ folder: S3Object }> = ({ folder }) => {
     return (<ListItem button component={Link} to={`/${folder.key}`}>
@@ -25,24 +27,24 @@ const FolderListItem: React.FC<{ folder: S3Object }> = ({ folder }) => {
     </ListItem>);
 }
 
-const OtherFileItem: React.FC<{ file: S3Object }> = ({ file }) => {
+const OtherFileItem: React.FC<{ file: PlaylistItem }> = ({ file }) => {
     return (<ListItem>
         <ListItemIcon>
             <InsertDriveFileIcon />
         </ListItemIcon>
-        <ListItemText primary={file.fileName} />
+        <ListItemText primary={file.track.fileName} />
     </ListItem>);
 }
 
-const AudioFileItem: React.FC<{ file: S3Object }> = ({ file }) => {
+const AudioFileItem: React.FC<{ file: PlaylistItem }> = ({ file }) => {
     const { currentTrack, isPlaying } = useMusicPlayer();
-    const isCurrentTrack = currentTrack?.key === file.key;
+    const isCurrentTrack = currentTrack?.track.key === file.track.key;
     const state = isCurrentTrack ? (isPlaying ? 'playing' : 'paused') : '';
-    return (<ListItem button component={Link} to={`/${file.key}`}>
+    return (<ListItem button component={Link} to={`/${file.track.key}`}>
         <ListItemIcon>
             <AudiotrackIcon />
         </ListItemIcon>
-        <ListItemText primary={file.fileName} secondary={state} />
+        <ListItemText primary={file.track.fileName} secondary={state} />
     </ListItem>);
 }
 
@@ -56,51 +58,55 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const MediaList: React.FC<{ path: string, time?: number }> = ({ path, time }) => {
-    const [folderListing, setFolderListing] = useState<S3Object[] | undefined>(undefined);
+    const [playlist, setPlaylist] = useState<Playlist | undefined>(undefined);
     const { playerControl, currentTrack } = useMusicPlayer();
 
     const isFolder = path === '' || path.indexOf('/') < 0 || path.endsWith('/');
     const folderPath = isFolder ? path : path.substr(0, path.lastIndexOf('/') + 1);
     const currentFolder = s3.getFolder(folderPath);
-    const startPlaying = !isFolder && (!currentTrack || currentTrack.key !== path);
+    const startPlaying = !isFolder && (!currentTrack || currentTrack.track.key !== path);
 
     const classes = useStyles();
 
     useEffect(() => {
         (async function fetchData() {
-            setFolderListing(undefined);
+            setPlaylist(undefined);
             try {
                 const media = await s3.listMedia(currentFolder.key);
-                setFolderListing(media);
+                setPlaylist(playlistService.createPlaylist(media));
             } catch (error) {
                 console.error("Error listing media bucket", error);
-                setFolderListing([]);
+                setPlaylist(undefined);
             }
         })();
     }, [currentFolder.key]);
 
     useEffect(() => {
-        (async function fetchData() {
-            if (startPlaying) {
-                const file = await s3.getObject(path);
-                playerControl.playTrack(file);
-                if (time) {
-                    playerControl.seekToTime(time);
-                }
-            }
-        })();
-    }, [startPlaying, path, time, playerControl]);
+        if (!startPlaying || !playlist) {
+            return;
+        }
+        const item = playlist.findItem(path);
+        if (!item) {
+            console.warn(`Path '${path}' not found in playlist`);
+            return;
+        }
+        console.log(`Path '${path}' found in playlist: `, item);
+        playerControl.playTrack(item);
+        if (time) {
+            playerControl.seekToTime(time);
+        }
+    }, [startPlaying, path, time, playerControl, playlist]);
 
     const isAudioFile = (object: S3Object) => object.key.toLowerCase().endsWith('.mp3');
 
-    function renderItem(object: S3Object) {
-        if (object.isFolder) {
-            return <FolderListItem key={object.key} folder={object} />;
+    function renderItem(object: PlaylistItem) {
+        if (object.track.isFolder) {
+            return <FolderListItem key={object.track.key} folder={object.track} />;
         }
-        if (isAudioFile(object)) {
-            return <AudioFileItem key={object.key} file={object} />
+        if (isAudioFile(object.track)) {
+            return <AudioFileItem key={object.track.key} file={object} />
         }
-        return <OtherFileItem key={object.key} file={object} />
+        return <OtherFileItem key={object.track.key} file={object} />
     }
 
     const parentPath = `/${currentFolder.getParentFolder().key}`;
@@ -117,11 +123,11 @@ const MediaList: React.FC<{ path: string, time?: number }> = ({ path, time }) =>
             <div>Current directory: {'/' + currentFolder.key}</div>
             <div>
                 {
-                    (folderListing === undefined)
+                    (playlist === undefined)
                         ? <CircularProgress />
                         : <List dense={true}>
                             {upOneLevel}
-                            {folderListing.map(renderItem)}
+                            {playlist.items.map(renderItem)}
                         </List>
                 }
             </div>
