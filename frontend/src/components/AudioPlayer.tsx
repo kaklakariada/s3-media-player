@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link } from "react-router-dom";
+import React, { useState, useEffect, useRef, SyntheticEvent } from 'react';
+import { Link, useHistory } from "react-router-dom";
 import { makeStyles } from '@material-ui/core/styles';
 import Container from "@material-ui/core/Container";
 import useMusicPlayer from "../hooks/useMusicPlayer";
@@ -28,6 +28,7 @@ const PlayerControls: React.FC = () => {
     const [url, setUrl] = useState<string | undefined>(undefined);
     const playerRef = useRef<HTMLAudioElement>(null);
     const classes = useStyles();
+    const history = useHistory();
 
     playerControl.registerPlayer({
         seekToTime: (seconds) => {
@@ -44,9 +45,12 @@ const PlayerControls: React.FC = () => {
     });
 
     async function updateUrl(track: PlaylistItem | undefined) {
-        if (track) {
-            setUrl(await track.track.getUrl());
+        if (track && !track.track.isFolder) {
+            const url = await track.track.getUrl();
+            console.log(`Current track has changed to ${track.track.fileName}. Playing URL...`);
+            setUrl(url);
         } else {
+            console.log("Invalid item, skip updating url", track);
             setUrl(undefined);
         }
     }
@@ -70,6 +74,42 @@ const PlayerControls: React.FC = () => {
         skip(60);
     }
 
+    function onEndedEvent(event: SyntheticEvent<HTMLAudioElement>) {
+        if (currentTrack && currentTrack.next) {
+            const nextKey = currentTrack.next.track.key;
+            console.log(`Play next track ${nextKey}`)
+            history.push(`/${nextKey}`);
+        } else {
+            console.log("No next track. Stop playing.")
+        }
+    }
+
+    function onErrorEvent(event: SyntheticEvent<HTMLAudioElement>) {
+        console.error("Playing error: ", event);
+    }
+
+    function onAbortEvent(event: SyntheticEvent<HTMLAudioElement>) {
+        console.warn("On Abort event: ", event);
+    }
+
+    function onProgressEvent(event: SyntheticEvent<HTMLAudioElement>) {
+        console.log("On progress event: ", event);
+    }
+    function onTimeUpdateEvent(event: SyntheticEvent<HTMLAudioElement>) {
+    }
+    function onSuspendEvent(event: SyntheticEvent<HTMLAudioElement>) {
+        console.log("On suspend event: ", event);
+    }
+    function onWaitingEvent(event: SyntheticEvent<HTMLAudioElement>) {
+        console.log("On waiting event: ", event);
+    }
+    function onEmptiedEvent(event: SyntheticEvent<HTMLAudioElement>) {
+        console.log("On emptied event: ", event);
+    }
+    function onDurationChangeEvent(event: SyntheticEvent<HTMLAudioElement>) {
+        console.log("On durationchanged event: ", event);
+    }
+
     const timeParam = playerRef.current ? `&time=${Math.trunc(playerRef.current.currentTime)}` : '';
     const currentTrackKey = currentTrack ? `/${currentTrack.track.key}${timeParam}` : '/';
     return (
@@ -89,7 +129,9 @@ const PlayerControls: React.FC = () => {
             <audio ref={playerRef} className={classes.player} src={url} crossOrigin="anonymous" autoPlay={true} controls={true}
                 onPlay={playerControl.onPlaying}
                 onPause={playerControl.onPause}
-                onEnded={playerControl.currentTrackHasEnded} />
+                onEnded={onEndedEvent} onError={onErrorEvent} onAbort={onAbortEvent}
+                onProgress={onProgressEvent} onTimeUpdate={onTimeUpdateEvent} onSuspend={onSuspendEvent} onWaiting={onWaitingEvent}
+                onEmptied={onEmptiedEvent} onDurationChange={onDurationChangeEvent} />
         </Container>
     )
 }

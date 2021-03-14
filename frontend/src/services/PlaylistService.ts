@@ -7,21 +7,35 @@ export interface Playlist {
     items: PlaylistItem[]
 }
 
-export interface PlaylistItem {
+interface MutablePlaylistItem {
     track: S3Object;
     prev?: PlaylistItem;
     next?: PlaylistItem;
+    equals(other: PlaylistItem | undefined): boolean;
+}
+export type PlaylistItem = Readonly<MutablePlaylistItem>;
+
+function createItem(track: S3Object): PlaylistItem {
+    if (!track) {
+        throw Error("Track is not defined");
+    }
+    return {
+        track,
+        equals: (other: PlaylistItem) => other && track.bucket === other.track.bucket && track.key === other.track.key,
+    };
 }
 
 export class PlaylistService {
     createPlaylist(objects: S3Object[]): Playlist {
         const items: PlaylistItem[] = [];
-        let prev: PlaylistItem | undefined = undefined;
-        let next: PlaylistItem | undefined = undefined;
-        let current: PlaylistItem | undefined = undefined;
+        let prev: MutablePlaylistItem | undefined = undefined;
+        let next: MutablePlaylistItem | undefined = undefined;
+        let current: MutablePlaylistItem | undefined = undefined;
         for (let i = 0; i < objects.length; i++) {
-            next = i < objects.length ? { track: objects[i + 1] } : undefined;
-            current = { track: objects[i], prev, next };
+            next = i + 1 < objects.length ? createItem(objects[i + 1]) : undefined;
+            current = createItem(objects[i]);
+            current.next = next;
+            current.prev = prev;
             if (prev) {
                 prev.next = current;
             }
@@ -32,7 +46,8 @@ export class PlaylistService {
             prev = current;
         }
         return {
-            items, findItem: (path) => items.find(item => item.track.key === path)
+            items,
+            findItem: (path) => items.find(item => item.track.key === path),
         };
     }
 }

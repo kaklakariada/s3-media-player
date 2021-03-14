@@ -38,7 +38,7 @@ const OtherFileItem: React.FC<{ file: PlaylistItem }> = ({ file }) => {
 
 const AudioFileItem: React.FC<{ file: PlaylistItem }> = ({ file }) => {
     const { currentTrack, isPlaying } = useMusicPlayer();
-    const isCurrentTrack = currentTrack?.track.key === file.track.key;
+    const isCurrentTrack = file.equals(currentTrack);
     const state = isCurrentTrack ? (isPlaying ? 'playing' : 'paused') : '';
     return (<ListItem button component={Link} to={`/${file.track.key}`}>
         <ListItemIcon>
@@ -64,7 +64,7 @@ const MediaList: React.FC<{ path: string, time?: number }> = ({ path, time }) =>
     const isFolder = path === '' || path.indexOf('/') < 0 || path.endsWith('/');
     const folderPath = isFolder ? path : path.substr(0, path.lastIndexOf('/') + 1);
     const currentFolder = s3.getFolder(folderPath);
-    const startPlaying = !isFolder && (!currentTrack || currentTrack.track.key !== path);
+    const [initialStartPlaying, setInitialStartPlaying] = useState<boolean>(!isFolder && (!currentTrack || currentTrack.track.key !== path));
 
     const classes = useStyles();
 
@@ -82,20 +82,23 @@ const MediaList: React.FC<{ path: string, time?: number }> = ({ path, time }) =>
     }, [currentFolder.key]);
 
     useEffect(() => {
-        if (!startPlaying || !playlist) {
+        if(!playlist) {
             return;
         }
         const item = playlist.findItem(path);
-        if (!item) {
-            console.warn(`Path '${path}' not found in playlist`);
+        if (!item || item.track.isFolder) {
             return;
         }
-        console.log(`Path '${path}' found in playlist: `, item);
         playerControl.playTrack(item);
+    }, [path, playerControl, playlist]);
+
+    useEffect(() => {
         if (time) {
+            console.log("Seek to time ", time);
             playerControl.seekToTime(time);
         }
-    }, [startPlaying, path, time, playerControl, playlist]);
+    }, [playerControl, time]);
+
 
     const isAudioFile = (object: S3Object) => object.key.toLowerCase().endsWith('.mp3');
 

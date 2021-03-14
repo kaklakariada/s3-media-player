@@ -34,12 +34,20 @@ export class S3Client {
     }
 
     private async createClient(): Promise<State> {
-        const credentials = await this.authService.getCredentials();
+        const credentials = await this.getCredentials();
         const s3Config: S3.Types.ClientConfiguration = {
             region: environment.region,
             credentials: credentials
         };
         return { s3: new S3(s3Config), credentials };
+    }
+
+    private async getCredentials() {
+        try {
+            return await this.authService.getCredentials();
+        } catch(error) {
+            throw Error("Error getting credentials: " + error);
+        }
     }
 
     private async getS3(): Promise<S3> {

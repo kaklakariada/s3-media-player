@@ -26,6 +26,7 @@ export class PlayerControl {
     constructor(state: State, setState: StateSetter) {
         this.#state = state;
         this.#setState = setState;
+        
         this.onPlaying = this.onPlaying.bind(this);
         this.onPause = this.onPause.bind(this);
         this.seekToTime = this.seekToTime.bind(this);
@@ -37,6 +38,9 @@ export class PlayerControl {
     }
 
     async playTrack(track: PlaylistItem) {
+        if (this.#state.currentTrack && this.#state.currentTrack.equals(track)) {
+            return;
+        }
         this.#setState(state => ({ ...state, currentTrack: track }));
     }
 
@@ -60,16 +64,6 @@ export class PlayerControl {
     
     setPlayingState(playing: boolean) {
         this.#setState(state => ({ ...state, isPlaying: playing }));
-    }
-
-    currentTrackHasEnded() {
-        const next = this.#state.currentTrack?.next;
-        if(next) {
-            console.log("Playback has finished, playing next ", next);
-            this.#setState(state => ({...state, currentTrack: next}))
-        } else {
-            console.log("Playback has finished, end of playlist.");
-        }
     }
 }
 
