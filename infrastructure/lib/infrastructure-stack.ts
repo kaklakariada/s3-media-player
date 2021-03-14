@@ -1,7 +1,7 @@
 import * as cdk from '@aws-cdk/core';
 import { StaticContentConstruct } from './static-content';
 import { CognitoAuthConstruct } from './auth';
-import { PolicyStatement, Role } from "@aws-cdk/aws-iam";
+import { PolicyStatement } from "@aws-cdk/aws-iam";
 import { Bucket } from "@aws-cdk/aws-s3";
 
 export interface InfrastructureStackProps extends cdk.StackProps {
