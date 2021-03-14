@@ -1,10 +1,8 @@
 import { S3Object } from "./S3Service";
 
-
-
 export interface Playlist {
+    readonly items: PlaylistItem[]
     findItem(path: string): PlaylistItem | undefined;
-    items: PlaylistItem[]
 }
 
 interface MutablePlaylistItem {

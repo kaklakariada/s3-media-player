@@ -6,6 +6,7 @@ import './App.css';
 import MediaList from './components/MediaList';
 import { MusicPlayerProvider } from './context/MusicPlayerContext';
 import PlayerControls from './components/AudioPlayer';
+import environment from './environment'
 
 const useStyles = makeStyles(theme => ({
   authenticator: {
@@ -16,7 +17,7 @@ const useStyles = makeStyles(theme => ({
 const RouterChild: React.FC = () => {
   let { pathname } = useLocation();
   const { path, time } = parsePath(pathname);
-  return (<MediaList path={path} time={time} />);
+  return (<MediaList bucket={environment.mediaBucket} path={path} time={time} />);
 }
 
 function parsePath(pathname: string) {
@@ -41,7 +42,7 @@ function App() {
           </div>
           <Switch>
             <Route exact path="/">
-              <MediaList path="" />
+              <MediaList bucket={environment.mediaBucket} path="" />
             </Route>
             <Route path="/:path&time=:time" children={<RouterChild />} />
             <Route path="/:path" children={<RouterChild />} />

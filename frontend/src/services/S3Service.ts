@@ -1,13 +1,12 @@
 import S3, { Bucket, ListObjectsV2Request } from 'aws-sdk/clients/s3';
 import { AuthService } from './AuthService';
-import environment from '../environment';
 import { S3Client } from './AuthenticatedS3Client';
 
 const s3Client = new S3Client(new AuthService());
 
-async function getUrl(key: string): Promise<string> {
+async function getUrl(bucket: string, key: string): Promise<string> {
     const validForSeconds = 5 * 60 * 60;
-    return await s3Client.getSignedUrl('getObject', key, validForSeconds);
+    return await s3Client.getSignedUrl('getObject', bucket, key, validForSeconds);
 }
 
 export interface S3Folder {
@@ -55,7 +54,7 @@ class S3FileObject implements S3Object {
         if (this.isFolder) {
             throw new Error(`Cannot get url for folder ${this.key}`);
         }
-        return getUrl(this.key);
+        return getUrl(this.bucket, this.key);
     }
 
     getParentFolder(): S3Folder {
@@ -104,35 +103,35 @@ export class S3Service {
         return buckets.map(b => b.Name || "(unknown bucket)");
     }
 
-    async listMedia(prefix: string): Promise<S3Object[]> {
+    async listMedia(bucket: string, prefix: string): Promise<S3Object[]> {
         const params: ListObjectsV2Request = {
-            Bucket: environment.mediaBucket,
+            Bucket: bucket,
             Delimiter: '/',
             Prefix: prefix
         };
         const response = await s3Client.listObjectsV2(params);
-        const folders: S3Object[] = response.CommonPrefixes?.map(this.convertCommonPrefix) || [];
-        const objects: S3Object[] = response.Contents?.map(this.convertObject) || [];
+        const folders: S3Object[] = response.CommonPrefixes?.map(prefix => this.convertCommonPrefix(bucket, prefix)) || [];
+        const objects: S3Object[] = response.Contents?.map(object => this.convertObject(bucket, object)) || [];
         return folders.concat(objects).filter(o => o.key !== prefix);
     }
 
-    async getObject(key: string): Promise<S3Object> {
-        return new S3FileObject(environment.mediaBucket, key);
+    async getObject(bucket: string, key: string): Promise<S3Object> {
+        return new S3FileObject(bucket, key);
     }
 
-    getFolder(prefix: string): S3Folder {
-        return new S3FolderObject(environment.mediaBucket, prefix);
+    getFolder(bucket: string, prefix: string): S3Folder {
+        return new S3FolderObject(bucket, prefix);
     }
 
-    convertObject(object: S3.Object): S3Object {
-        const file = new S3FileObject(environment.mediaBucket, object.Key || '(no key)');
+    convertObject(bucket: string, object: S3.Object): S3Object {
+        const file = new S3FileObject(bucket, object.Key || '(no key)');
         if (file.key.endsWith('/')) {
-            return new S3FolderObject(environment.mediaBucket, file.key);
+            return new S3FolderObject(bucket, file.key);
         }
         return file;
     }
 
-    convertCommonPrefix(prefix: S3.CommonPrefix): S3Object {
-        return new S3FolderObject(environment.mediaBucket, prefix.Prefix || '(unknown prefix)');
+    convertCommonPrefix(bucket: string, prefix: S3.CommonPrefix): S3Object {
+        return new S3FolderObject(bucket, prefix.Prefix || '(unknown prefix)');
     }
 }

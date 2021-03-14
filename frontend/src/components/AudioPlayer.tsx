@@ -4,8 +4,10 @@ import { makeStyles } from '@material-ui/core/styles';
 import Container from "@material-ui/core/Container";
 import useMusicPlayer from "../hooks/useMusicPlayer";
 import IconButton from '@material-ui/core/IconButton';
-import FastForwardIcon from '@material-ui/icons/FastForward';
 import FastRewindIcon from '@material-ui/icons/FastRewind';
+import FastForwardIcon from '@material-ui/icons/FastForward';
+import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
+import SkipNextIcon from '@material-ui/icons/SkipNext';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import PauseIcon from '@material-ui/icons/Pause';
 import Typography from '@material-ui/core/Typography';
@@ -60,9 +62,29 @@ const PlayerControls: React.FC = () => {
     }, [currentTrack]);
 
     function skip(skipSeconds: number) {
-        if (playerRef.current) {
-            const currentTime = playerRef.current.currentTime;
-            playerRef.current.currentTime = currentTime + skipSeconds;
+        if (!playerRef.current) {
+            return;
+        }
+        const currentTime = playerRef.current.currentTime;
+        const skipTo = currentTime + skipSeconds;
+        if (skipTo > 0) {
+            playerRef.current.currentTime = skipTo;
+        }
+    }
+
+    function skipToPrevious() {
+        if (currentTrack && currentTrack.prev) {
+            startPlaying(currentTrack.prev);
+        } else {
+            console.log("No previous track. Stop playing.")
+        }
+    }
+
+    function skipToNext() {
+        if (currentTrack && currentTrack.next) {
+            startPlaying(currentTrack.next);
+        } else {
+            console.log("No next track. Stop playing.")
         }
     }
 
@@ -74,14 +96,14 @@ const PlayerControls: React.FC = () => {
         skip(60);
     }
 
+    function startPlaying(track: PlaylistItem) {
+        const nextKey = track.track.key;
+        console.log(`Play track ${nextKey}`)
+        history.push(`/${nextKey}`);
+    }
+
     function onEndedEvent(event: SyntheticEvent<HTMLAudioElement>) {
-        if (currentTrack && currentTrack.next) {
-            const nextKey = currentTrack.next.track.key;
-            console.log(`Play next track ${nextKey}`)
-            history.push(`/${nextKey}`);
-        } else {
-            console.log("No next track. Stop playing.")
-        }
+        skipToNext();
     }
 
     function onErrorEvent(event: SyntheticEvent<HTMLAudioElement>) {
@@ -92,30 +114,15 @@ const PlayerControls: React.FC = () => {
         console.warn("On Abort event: ", event);
     }
 
-    function onProgressEvent(event: SyntheticEvent<HTMLAudioElement>) {
-        console.log("On progress event: ", event);
-    }
-    function onTimeUpdateEvent(event: SyntheticEvent<HTMLAudioElement>) {
-    }
-    function onSuspendEvent(event: SyntheticEvent<HTMLAudioElement>) {
-        console.log("On suspend event: ", event);
-    }
-    function onWaitingEvent(event: SyntheticEvent<HTMLAudioElement>) {
-        console.log("On waiting event: ", event);
-    }
-    function onEmptiedEvent(event: SyntheticEvent<HTMLAudioElement>) {
-        console.log("On emptied event: ", event);
-    }
-    function onDurationChangeEvent(event: SyntheticEvent<HTMLAudioElement>) {
-        console.log("On durationchanged event: ", event);
-    }
-
     const timeParam = playerRef.current ? `&time=${Math.trunc(playerRef.current.currentTime)}` : '';
     const currentTrackKey = currentTrack ? `/${currentTrack.track.key}${timeParam}` : '/';
     return (
         <Container className={classes.root}>
             <Typography>Current track: <Link to={currentTrackKey}>{currentTrackKey}</Link></Typography>
             <div>
+                <IconButton onClick={skipToPrevious} disabled={!isPlaying}>
+                    <SkipPreviousIcon />
+                </IconButton>
                 <IconButton onClick={fastRewind} disabled={!isPlaying}>
                     <FastRewindIcon />
                 </IconButton>
@@ -125,13 +132,14 @@ const PlayerControls: React.FC = () => {
                 <IconButton onClick={fastForward} disabled={!isPlaying}>
                     <FastForwardIcon />
                 </IconButton>
+                <IconButton onClick={skipToNext} disabled={!isPlaying}>
+                    <SkipNextIcon />
+                </IconButton>
             </div>
             <audio ref={playerRef} className={classes.player} src={url} crossOrigin="anonymous" autoPlay={true} controls={true}
                 onPlay={playerControl.onPlaying}
                 onPause={playerControl.onPause}
-                onEnded={onEndedEvent} onError={onErrorEvent} onAbort={onAbortEvent}
-                onProgress={onProgressEvent} onTimeUpdate={onTimeUpdateEvent} onSuspend={onSuspendEvent} onWaiting={onWaitingEvent}
-                onEmptied={onEmptiedEvent} onDurationChange={onDurationChangeEvent} />
+                onEnded={onEndedEvent} onError={onErrorEvent} onAbort={onAbortEvent} />
         </Container>
     )
 }

@@ -57,14 +57,13 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const MediaList: React.FC<{ path: string, time?: number }> = ({ path, time }) => {
+const MediaList: React.FC<{ bucket: string, path: string, time?: number }> = ({ bucket, path, time }) => {
     const [playlist, setPlaylist] = useState<Playlist | undefined>(undefined);
-    const { playerControl, currentTrack } = useMusicPlayer();
+    const { playerControl } = useMusicPlayer();
 
     const isFolder = path === '' || path.indexOf('/') < 0 || path.endsWith('/');
     const folderPath = isFolder ? path : path.substr(0, path.lastIndexOf('/') + 1);
-    const currentFolder = s3.getFolder(folderPath);
-    const [initialStartPlaying, setInitialStartPlaying] = useState<boolean>(!isFolder && (!currentTrack || currentTrack.track.key !== path));
+    const currentFolder = s3.getFolder(bucket, folderPath);
 
     const classes = useStyles();
 
@@ -72,14 +71,14 @@ const MediaList: React.FC<{ path: string, time?: number }> = ({ path, time }) =>
         (async function fetchData() {
             setPlaylist(undefined);
             try {
-                const media = await s3.listMedia(currentFolder.key);
+                const media = await s3.listMedia(bucket, currentFolder.key);
                 setPlaylist(playlistService.createPlaylist(media));
             } catch (error) {
                 console.error("Error listing media bucket", error);
                 setPlaylist(undefined);
             }
         })();
-    }, [currentFolder.key]);
+    }, [bucket, currentFolder.key]);
 
     useEffect(() => {
         if(!playlist) {

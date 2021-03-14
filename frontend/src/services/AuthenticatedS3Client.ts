@@ -16,9 +16,9 @@ export class S3Client {
         this.authService = authService;
     }
 
-    async getSignedUrl(operation: string, key: string, validForSeconds: number): Promise<string> {
+    async getSignedUrl(operation: string, bucket: string, key: string, validForSeconds: number): Promise<string> {
         const params: any = {
-            Bucket: environment.mediaBucket,
+            Bucket: bucket,
             Key: key,
             Expires: validForSeconds
         };
