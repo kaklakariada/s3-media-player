@@ -7,6 +7,7 @@ interface Props {
 
 interface State {
     currentTrack: PlaylistItem | undefined;
+    currentTime: number | undefined;
     isPlaying: boolean;
 }
 
@@ -27,10 +28,14 @@ export class PlayerControl {
         this.#state = state;
         this.#setState = setState;
         
+        this.registerPlayer = this.registerPlayer.bind(this);
+        this.playTrack = this.playTrack.bind(this);
+        this.seekToTime = this.seekToTime.bind(this);
         this.onPlaying = this.onPlaying.bind(this);
         this.onPause = this.onPause.bind(this);
-        this.seekToTime = this.seekToTime.bind(this);
         this.togglePlayPause = this.togglePlayPause.bind(this);
+        this.onTimeChanged = this.onTimeChanged.bind(this);
+        this.setPlayingState = this.setPlayingState.bind(this);
     }
 
     registerPlayer(player: PlayerCallback) {
@@ -41,6 +46,7 @@ export class PlayerControl {
         if (this.#state.currentTrack && this.#state.currentTrack.equals(track)) {
             return;
         }
+        console.log("Track changed to ", track);
         this.#setState(state => ({ ...state, currentTrack: track }));
     }
 
@@ -61,9 +67,18 @@ export class PlayerControl {
     togglePlayPause() {
         this.setPlayingState(!this.#state.isPlaying);
     }
+
+    onTimeChanged(currentTime: number) {
+        this.#setState(state => ({ ...state, currentTime }));
+    }
     
     setPlayingState(playing: boolean) {
-        this.#setState(state => ({ ...state, isPlaying: playing }));
+        console.log("Set playing state ", playing);
+        if(playing) {
+            this.#setState(state => ({ ...state, isPlaying: playing }));
+        } else {
+            this.#setState(state => ({ ...state, isPlaying: playing, currentTime: undefined }));
+        }
     }
 }
 
@@ -76,10 +91,7 @@ const initialContext: Context = createDefaultContext();
 const MusicPlayerContext = React.createContext(initialContext);
 
 const MusicPlayerProvider = (props: Props) => {
-    const [state, setState] = useState<State>({
-        isPlaying: false,
-        currentTrack: undefined
-    });
+    const [state, setState] = useState<State>(createDefaultState());
     return (
         <MusicPlayerContext.Provider value={{ state, setState, playerControl: new PlayerControl(state, setState) }}>
             {props.children}
@@ -90,8 +102,16 @@ const MusicPlayerProvider = (props: Props) => {
 export { MusicPlayerContext, MusicPlayerProvider };
 
 function createDefaultContext(): Context {
-    const defaultState: State = { isPlaying: false, currentTrack: undefined };
+    const defaultState = createDefaultState();
     const defaultStateSetter: StateSetter = () => defaultState;
     const defaultPlayerControl = new PlayerControl(defaultState, defaultStateSetter);
     return { state: defaultState, setState: defaultStateSetter, playerControl: defaultPlayerControl };
+}
+
+function createDefaultState(): State {
+    return {
+        currentTrack: undefined,
+        currentTime: undefined,
+        isPlaying: false,
+    };
 }

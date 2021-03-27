@@ -25,6 +25,17 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
+const CurrentTrackLink: React.FC<{}> = () => {
+    const { currentTrack, currentTime } = useMusicPlayer();
+
+    if (!currentTrack) {
+        return <Typography>No track playing currently</Typography>
+    }
+    const timeParam = currentTime ? `&time=${Math.trunc(currentTime)}` : '';
+    const currentTrackKey = `/${currentTrack.track.key}${timeParam}`;
+    return <Typography>Playing <Link to={currentTrackKey}>{currentTrack.track.key} @ {currentTime}s</Link></Typography>;
+}
+
 const PlayerControls: React.FC = () => {
     const { currentTrack, playerControl, isPlaying } = useMusicPlayer();
     const [url, setUrl] = useState<string | undefined>(undefined);
@@ -114,11 +125,16 @@ const PlayerControls: React.FC = () => {
         console.warn("On Abort event: ", event);
     }
 
-    const timeParam = playerRef.current ? `&time=${Math.trunc(playerRef.current.currentTime)}` : '';
-    const currentTrackKey = currentTrack ? `/${currentTrack.track.key}${timeParam}` : '/';
+    function onTimeUpdate(event: SyntheticEvent<HTMLAudioElement>) {
+        if (playerRef.current) {
+            const time = playerRef.current?.currentTime;
+            playerControl.onTimeChanged(Math.trunc(time));
+        }
+    }
+
     return (
         <Container className={classes.root}>
-            <Typography>Current track: <Link to={currentTrackKey}>{currentTrackKey}</Link></Typography>
+            <CurrentTrackLink />
             <div>
                 <IconButton onClick={skipToPrevious} disabled={!isPlaying}>
                     <SkipPreviousIcon />
@@ -137,6 +153,7 @@ const PlayerControls: React.FC = () => {
                 </IconButton>
             </div>
             <audio ref={playerRef} className={classes.player} src={url} crossOrigin="anonymous" autoPlay={true} controls={true}
+                onTimeUpdate={onTimeUpdate}
                 onPlay={playerControl.onPlaying}
                 onPause={playerControl.onPause}
                 onEnded={onEndedEvent} onError={onErrorEvent} onAbort={onAbortEvent} />

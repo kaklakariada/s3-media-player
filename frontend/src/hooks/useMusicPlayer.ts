@@ -6,8 +6,9 @@ const useMusicPlayer = () => {
 
   return {
     currentTrack: state.currentTrack,
+    currentTime: state.currentTime,
     isPlaying: state.isPlaying,
-    playerControl
+    playerControl,
   }
 };
 

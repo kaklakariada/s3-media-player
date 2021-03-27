@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { makeStyles } from '@material-ui/core/styles';
 import Container from "@material-ui/core/Container";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { S3Service, S3Object } from "../services/S3Service";
@@ -14,6 +13,7 @@ import InsertDriveFileIcon from '@material-ui/icons/InsertDriveFile';
 import KeyboardReturnIcon from '@material-ui/icons/KeyboardReturn';
 import useMusicPlayer from "../hooks/useMusicPlayer";
 import { Playlist, PlaylistItem, PlaylistService } from "../services/PlaylistService";
+import { Typography } from "@material-ui/core";
 
 const s3 = new S3Service();
 const playlistService = new PlaylistService();
@@ -48,24 +48,14 @@ const AudioFileItem: React.FC<{ file: PlaylistItem }> = ({ file }) => {
     </ListItem>);
 }
 
-const useStyles = makeStyles(theme => ({
-    root: {
-        'text-align': 'left',
-        'font-family': '"Roboto", "Helvetica", "Arial", sans-serif',
-        'font-weight': 400,
-        'line-height': 1.43
-    },
-}));
-
 const MediaList: React.FC<{ bucket: string, path: string, time?: number }> = ({ bucket, path, time }) => {
     const [playlist, setPlaylist] = useState<Playlist | undefined>(undefined);
+    const [error, setError] = useState<any | undefined>(undefined);
     const { playerControl } = useMusicPlayer();
 
     const isFolder = path === '' || path.indexOf('/') < 0 || path.endsWith('/');
     const folderPath = isFolder ? path : path.substr(0, path.lastIndexOf('/') + 1);
     const currentFolder = s3.getFolder(bucket, folderPath);
-
-    const classes = useStyles();
 
     useEffect(() => {
         (async function fetchData() {
@@ -73,9 +63,11 @@ const MediaList: React.FC<{ bucket: string, path: string, time?: number }> = ({ 
             try {
                 const media = await s3.listMedia(bucket, currentFolder.key);
                 setPlaylist(playlistService.createPlaylist(media));
+                setError(undefined);
             } catch (error) {
                 console.error("Error listing media bucket", error);
                 setPlaylist(undefined);
+                setError(error);
             }
         })();
     }, [bucket, currentFolder.key]);
@@ -121,12 +113,12 @@ const MediaList: React.FC<{ bucket: string, path: string, time?: number }> = ({ 
         </ListItem>);
 
     return (
-        <Container className={classes.root}>
-            <div>Current directory: {'/' + currentFolder.key}</div>
+        <Container>
+            <Typography variant="h6">Current directory: {'/' + currentFolder.key}</Typography>
             <div>
                 {
                     (playlist === undefined)
-                        ? <CircularProgress />
+                        ? (error ? `Error loading list: ${error}` : <CircularProgress />)
                         : <List dense={true}>
                             {upOneLevel}
                             {playlist.items.map(renderItem)}

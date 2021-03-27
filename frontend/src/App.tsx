@@ -9,6 +9,7 @@ import { MusicPlayerProvider } from './context/MusicPlayerContext';
 import PlayerControls from './components/AudioPlayer';
 import environment from './environment'
 import AppBar from './components/AppBar';
+import { Box } from '@material-ui/core';
 
 const RouterChild: React.FC = () => {
   let { pathname } = useLocation();
@@ -30,7 +31,13 @@ function parsePath(pathname: string) {
 const useStyles = makeStyles(theme => ({
   authenticator: {
     'text-align': 'center'
-  }
+  },
+  body: {
+    'text-align': 'left'
+  },
+  player: {
+    'margin': '5px'
+  },
 }));
 
 const theme = createMuiTheme({
@@ -47,22 +54,24 @@ function App() {
     <React.StrictMode>
       <MuiThemeProvider theme={theme}>
         <AmplifyAuthenticator usernameAlias="username" className={classes.authenticator}>
-          <CssBaseline />
-          <AppBar />
-          <MusicPlayerProvider>
-            <Router>
-              <div className="App">
-                <PlayerControls />
-              </div>
-              <Switch>
-                <Route exact path="/">
-                  <MediaList bucket={environment.mediaBucket} path="" />
-                </Route>
-                <Route path="/:path&time=:time" children={<RouterChild />} />
-                <Route path="/:path" children={<RouterChild />} />
-              </Switch>
-            </Router>
-          </MusicPlayerProvider>
+          <Box className={classes.body}>
+            <CssBaseline />
+            <MusicPlayerProvider>
+              <Router>
+                <AppBar />
+                <Box className={classes.player}>
+                  <PlayerControls />
+                </Box>
+                <Switch>
+                  <Route exact path="/">
+                    <MediaList bucket={environment.mediaBucket} path="" />
+                  </Route>
+                  <Route path="/:path&time=:time" children={<RouterChild />} />
+                  <Route path="/:path" children={<RouterChild />} />
+                </Switch>
+              </Router>
+            </MusicPlayerProvider>
+          </Box>
         </AmplifyAuthenticator>
       </MuiThemeProvider>
     </React.StrictMode>

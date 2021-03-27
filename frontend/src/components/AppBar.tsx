@@ -37,7 +37,7 @@ const AppBar: React.FC<unknown> = () => {
   const open = Boolean(anchorEl);
 
   useEffect(() => {
-    (async function() {
+    (async function () {
       try {
         const currentUser = await authService.currentAuthenticatedUser();
         setUser(currentUser);
