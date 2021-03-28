@@ -12,6 +12,8 @@ import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import PauseIcon from '@material-ui/icons/Pause';
 import Typography from '@material-ui/core/Typography';
 import { PlaylistItem } from '../services/PlaylistService';
+import { PlayerControl } from '../context/MusicPlayerContext';
+import { mediaSessionService } from '../services/MediaSessionService';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -21,12 +23,13 @@ const useStyles = makeStyles(theme => ({
         'line-height': 1.43,
     },
     player: {
-        width: '50%'
+        //width: '50%'
     }
 }));
 
 const CurrentTrackLink: React.FC<{}> = () => {
-    const { currentTrack, currentTime } = useMusicPlayer();
+    const { currentTrack } = useMusicPlayer();
+    const currentTime = undefined;
 
     if (!currentTrack) {
         return <Typography>No track playing currently</Typography>
@@ -36,26 +39,26 @@ const CurrentTrackLink: React.FC<{}> = () => {
     return <Typography>Playing <Link to={currentTrackKey}>{currentTrack.track.key} @ {currentTime}s</Link></Typography>;
 }
 
+function registerPlayer(playerRef: HTMLAudioElement, playerControl: PlayerControl) {
+    playerControl.registerPlayer({
+        seekToTime: (seconds: number) => {
+            playerRef.currentTime = seconds;
+        },
+        play: () => {
+            playerRef.play();
+        },
+        pause: () => {
+            playerRef.pause();
+        }
+    });
+}
+
 const PlayerControls: React.FC = () => {
     const { currentTrack, playerControl, isPlaying } = useMusicPlayer();
     const [url, setUrl] = useState<string | undefined>(undefined);
     const playerRef = useRef<HTMLAudioElement>(null);
     const classes = useStyles();
     const history = useHistory();
-
-    playerControl.registerPlayer({
-        seekToTime: (seconds) => {
-            if (playerRef.current) {
-                playerRef.current.currentTime = seconds;
-            }
-        },
-        play: () => {
-            playerRef.current?.play();
-        },
-        pause: () => {
-            playerRef.current?.pause();
-        },
-    });
 
     async function updateUrl(track: PlaylistItem | undefined) {
         if (track && !track.track.isFolder) {
@@ -70,51 +73,18 @@ const PlayerControls: React.FC = () => {
 
     useEffect(() => {
         updateUrl(currentTrack);
+        mediaSessionService.updateCurrentTrack(currentTrack);
     }, [currentTrack]);
 
-    function skip(skipSeconds: number) {
-        if (!playerRef.current) {
-            return;
+    useEffect(() => {
+        if (playerRef.current) {
+            registerPlayer(playerRef.current, playerControl);
+            mediaSessionService.registerPlayer(playerRef.current, playerControl);
         }
-        const currentTime = playerRef.current.currentTime;
-        const skipTo = currentTime + skipSeconds;
-        if (skipTo > 0) {
-            playerRef.current.currentTime = skipTo;
-        }
-    }
-
-    function skipToPrevious() {
-        if (currentTrack && currentTrack.prev) {
-            startPlaying(currentTrack.prev);
-        } else {
-            console.log("No previous track. Stop playing.")
-        }
-    }
-
-    function skipToNext() {
-        if (currentTrack && currentTrack.next) {
-            startPlaying(currentTrack.next);
-        } else {
-            console.log("No next track. Stop playing.")
-        }
-    }
-
-    function fastRewind() {
-        skip(-60);
-    }
-
-    function fastForward() {
-        skip(60);
-    }
-
-    function startPlaying(track: PlaylistItem) {
-        const nextKey = track.track.key;
-        console.log(`Play track ${nextKey}`)
-        history.push(`/${nextKey}`);
-    }
+    }, [playerControl]);
 
     function onEndedEvent(event: SyntheticEvent<HTMLAudioElement>) {
-        skipToNext();
+        playerControl.skipToNext();
     }
 
     function onErrorEvent(event: SyntheticEvent<HTMLAudioElement>) {
@@ -128,7 +98,7 @@ const PlayerControls: React.FC = () => {
     function onTimeUpdate(event: SyntheticEvent<HTMLAudioElement>) {
         if (playerRef.current) {
             const time = playerRef.current?.currentTime;
-            playerControl.onTimeChanged(Math.trunc(time));
+            playerControl.onTimeChanged(time);
         }
     }
 
@@ -136,19 +106,19 @@ const PlayerControls: React.FC = () => {
         <Container className={classes.root}>
             <CurrentTrackLink />
             <div>
-                <IconButton onClick={skipToPrevious} disabled={!isPlaying}>
+                <IconButton onClick={playerControl.skipToPrevious} disabled={!isPlaying}>
                     <SkipPreviousIcon />
                 </IconButton>
-                <IconButton onClick={fastRewind} disabled={!isPlaying}>
+                <IconButton onClick={playerControl.fastRewind} disabled={!isPlaying}>
                     <FastRewindIcon />
                 </IconButton>
                 <IconButton onClick={playerControl.togglePlayPause}>
                     {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
                 </IconButton>
-                <IconButton onClick={fastForward} disabled={!isPlaying}>
+                <IconButton onClick={playerControl.fastForward} disabled={!isPlaying}>
                     <FastForwardIcon />
                 </IconButton>
-                <IconButton onClick={skipToNext} disabled={!isPlaying}>
+                <IconButton onClick={playerControl.skipToNext} disabled={!isPlaying}>
                     <SkipNextIcon />
                 </IconButton>
             </div>
@@ -162,3 +132,4 @@ const PlayerControls: React.FC = () => {
 }
 
 export default PlayerControls
+
