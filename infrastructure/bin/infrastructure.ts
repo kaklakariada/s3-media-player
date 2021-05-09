@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
-import * as cdk from '@aws-cdk/core';
+import * as cdk from 'aws-cdk-lib';
 import { InfrastructureStack, InfrastructureStackProps } from '../lib/infrastructure-stack';
 import { CONFIG } from "../infrastructure-config";
 import { InfrastructureConfig } from "../lib/infrastructure-config-interface";
