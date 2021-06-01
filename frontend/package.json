@@ -12,7 +12,7 @@
     "@types/jest": "^26.0.23",
     "@types/node": "^15.0.2",
     "@types/react": "^17.0.5",
-    "@types/react-dom": "^17.0.3",
+    "@types/react-dom": "^17.0.5",
     "@types/react-router-dom": "^5.1.7",
     "aws-amplify": "^3.4.0",
     "aws-sdk": "^2.903.0",
