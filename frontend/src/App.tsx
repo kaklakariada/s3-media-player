@@ -1,6 +1,6 @@
 import React from 'react';
 import { AmplifyAuthenticator } from '@aws-amplify/ui-react';
-import { createMuiTheme, makeStyles, MuiThemeProvider } from "@material-ui/core/styles";
+import { createTheme, makeStyles, MuiThemeProvider } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { HashRouter as Router, Route, Switch, useLocation } from "react-router-dom";
 import './App.css';
@@ -25,10 +25,14 @@ function parsePath(pathname: string) {
     return { path: '/' };
   }
   const time = matcher[3] ? parseFloat(matcher[3]) : undefined;
-  return { path: matcher[1], time };
+  const p = matcher[1];
+  if(!p) {
+    throw Error("Error matching path");
+  }
+  return { path: p, time };
 }
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(_theme => ({
   authenticator: {
     'text-align': 'center'
   },
@@ -40,7 +44,7 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const theme = createMuiTheme({
+const theme = createTheme({
   typography: {
     button: {
       textTransform: "none"

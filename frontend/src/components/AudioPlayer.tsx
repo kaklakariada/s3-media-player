@@ -13,7 +13,7 @@ import PauseIcon from '@material-ui/icons/Pause';
 import Typography from '@material-ui/core/Typography';
 import { PlaylistItem } from '../services/PlaylistService';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(_theme => ({
     root: {
         'text-align': 'left',
         'font-family': '"Roboto", "Helvetica", "Arial", sans-serif',
@@ -113,7 +113,7 @@ const PlayerControls: React.FC = () => {
         history.push(`/${nextKey}`);
     }
 
-    function onEndedEvent(event: SyntheticEvent<HTMLAudioElement>) {
+    function onEndedEvent(_event: SyntheticEvent<HTMLAudioElement>) {
         skipToNext();
     }
 
@@ -125,7 +125,7 @@ const PlayerControls: React.FC = () => {
         console.warn("On Abort event: ", event);
     }
 
-    function onTimeUpdate(event: SyntheticEvent<HTMLAudioElement>) {
+    function onTimeUpdate(_event: SyntheticEvent<HTMLAudioElement>) {
         if (playerRef.current) {
             const time = playerRef.current?.currentTime;
             playerControl.onTimeChanged(Math.trunc(time));

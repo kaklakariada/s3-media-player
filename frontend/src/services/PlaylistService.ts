@@ -13,7 +13,7 @@ interface MutablePlaylistItem {
 }
 export type PlaylistItem = Readonly<MutablePlaylistItem>;
 
-function createItem(track: S3Object): PlaylistItem {
+function createItem(track: S3Object | undefined): PlaylistItem {
     if (!track) {
         throw Error("Track is not defined");
     }
