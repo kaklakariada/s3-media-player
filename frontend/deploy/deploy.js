@@ -1,5 +1,5 @@
-const { spawnSync } = require('child_process');
-const { CONFIG } = require('./deploy-config');
+import { spawnSync } from 'child_process';
+import { CONFIG } from './deploy-config.js';
 
 function execAws(args) {
     const environment = Object.create(process.env);
