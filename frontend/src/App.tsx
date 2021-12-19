@@ -67,8 +67,8 @@ function App() {
                   </Box>
                   <Routes>
                     <Route path="/" element={<MediaList bucket={environment.mediaBucket} path="" />} />
-                    <Route path="/:path&time=:time" element={<RouterChild />} />
-                    <Route path="/:path" element={<RouterChild />} />
+                    <Route path="/:path&time=:time/*" element={<RouterChild />} />
+                    <Route path="/:path/*" element={<RouterChild />} />
                   </Routes>
                 </Router>
               </MusicPlayerProvider>
