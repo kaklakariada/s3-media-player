@@ -1,6 +1,6 @@
 import { Stack, StackProps } from "aws-cdk-lib";
-import { PolicyStatement } from "aws-cdk-lib/lib/aws-iam";
-import { Bucket } from "aws-cdk-lib/lib/aws-s3";
+import { PolicyStatement } from "aws-cdk-lib/aws-iam";
+import { Bucket } from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
 import { CognitoAuthConstruct } from "./auth";
 import { StaticContentConstruct } from "./static-content";
