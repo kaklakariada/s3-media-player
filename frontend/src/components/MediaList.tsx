@@ -64,10 +64,10 @@ const MediaList: React.FC<{ bucket: string, path: string, time?: number }> = ({ 
                 const media = await s3.listMedia(bucket, currentFolder.key);
                 setPlaylist(playlistService.createPlaylist(media));
                 setError(undefined);
-            } catch (error) {
-                console.error("Error listing media bucket", error);
+            } catch (e) {
+                console.error("Error listing media bucket", e);
                 setPlaylist(undefined);
-                setError(error);
+                setError(e);
             }
         })();
     }, [bucket, currentFolder.key]);

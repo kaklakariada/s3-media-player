@@ -1,9 +1,10 @@
 import React from 'react';
-import { AmplifyAuthenticator } from '@aws-amplify/ui-react';
+import { Authenticator } from '@aws-amplify/ui-react';
 import { createTheme, makeStyles, MuiThemeProvider } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
-import { HashRouter as Router, Route, Switch, useLocation } from "react-router-dom";
+import { HashRouter as Router, Route, Routes, useLocation } from "react-router-dom";
 import './App.css';
+import '@aws-amplify/ui-react/styles.css';
 import MediaList from './components/MediaList';
 import { MusicPlayerProvider } from './context/MusicPlayerContext';
 import PlayerControls from './components/AudioPlayer';
@@ -26,16 +27,13 @@ function parsePath(pathname: string) {
   }
   const time = matcher[3] ? parseFloat(matcher[3]) : undefined;
   const p = matcher[1];
-  if(!p) {
+  if (!p) {
     throw Error("Error matching path");
   }
   return { path: p, time };
 }
 
 const useStyles = makeStyles(_theme => ({
-  authenticator: {
-    'text-align': 'center'
-  },
   body: {
     'text-align': 'left'
   },
@@ -57,26 +55,26 @@ function App() {
   return (
     <React.StrictMode>
       <MuiThemeProvider theme={theme}>
-        <AmplifyAuthenticator usernameAlias="username" className={classes.authenticator}>
-          <Box className={classes.body}>
-            <CssBaseline />
-            <MusicPlayerProvider>
-              <Router>
-                <AppBar />
-                <Box className={classes.player}>
-                  <PlayerControls />
-                </Box>
-                <Switch>
-                  <Route exact path="/">
-                    <MediaList bucket={environment.mediaBucket} path="" />
-                  </Route>
-                  <Route path="/:path&time=:time" children={<RouterChild />} />
-                  <Route path="/:path" children={<RouterChild />} />
-                </Switch>
-              </Router>
-            </MusicPlayerProvider>
-          </Box>
-        </AmplifyAuthenticator>
+        <Authenticator>
+          {() => (
+            <Box className={classes.body}>
+              <CssBaseline />
+              <MusicPlayerProvider>
+                <Router>
+                  <AppBar />
+                  <Box className={classes.player}>
+                    <PlayerControls />
+                  </Box>
+                  <Routes>
+                    <Route path="/" element={<MediaList bucket={environment.mediaBucket} path="" />} />
+                    <Route path="/:path&time=:time/*" element={<RouterChild />} />
+                    <Route path="/:path/*" element={<RouterChild />} />
+                  </Routes>
+                </Router>
+              </MusicPlayerProvider>
+            </Box>
+          )}
+        </Authenticator>
       </MuiThemeProvider>
     </React.StrictMode>
   );
