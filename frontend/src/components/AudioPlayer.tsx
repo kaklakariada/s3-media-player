@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, SyntheticEvent } from 'react';
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { makeStyles } from '@material-ui/core/styles';
 import Container from "@material-ui/core/Container";
 import useMusicPlayer from "../hooks/useMusicPlayer";
@@ -41,7 +41,7 @@ const PlayerControls: React.FC = () => {
     const [url, setUrl] = useState<string | undefined>(undefined);
     const playerRef = useRef<HTMLAudioElement>(null);
     const classes = useStyles();
-    const history = useHistory();
+    const navigate = useNavigate();
 
     playerControl.registerPlayer({
         seekToTime: (seconds) => {
@@ -59,9 +59,9 @@ const PlayerControls: React.FC = () => {
 
     async function updateUrl(track: PlaylistItem | undefined) {
         if (track && !track.track.isFolder) {
-            const url = await track.track.getUrl();
+            const trackUrl = await track.track.getUrl();
             console.log(`Current track has changed to ${track.track.fileName}. Playing URL...`);
-            setUrl(url);
+            setUrl(trackUrl);
         } else {
             console.log("Invalid item, skip updating url", track);
             setUrl(undefined);
@@ -110,7 +110,7 @@ const PlayerControls: React.FC = () => {
     function startPlaying(track: PlaylistItem) {
         const nextKey = track.track.key;
         console.log(`Play track ${nextKey}`)
-        history.push(`/${nextKey}`);
+        navigate(`/${nextKey}`);
     }
 
     function onEndedEvent(_event: SyntheticEvent<HTMLAudioElement>) {
