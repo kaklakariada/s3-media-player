@@ -1,5 +1,6 @@
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import MenuIcon from "@mui/icons-material/Menu";
+import { Theme } from "@mui/material";
 import MuiAppBar from "@mui/material/AppBar";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
@@ -12,12 +13,17 @@ import { CognitoUser } from "amazon-cognito-identity-js";
 import React, { useEffect, useState } from "react";
 import { AuthService } from "../services/AuthService";
 
-const useStyles = makeStyles(_theme => ({
+declare module '@mui/styles/defaultTheme' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface DefaultTheme extends Theme { }
+}
+
+const useStyles = makeStyles(theme => ({
   root: {
     flexGrow: 1,
   },
   menuButton: {
-    // marginRight: theme.spacing(2),
+    marginRight: theme.spacing(2),
   },
   title: {
     flexGrow: 1,

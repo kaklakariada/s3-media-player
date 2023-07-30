@@ -2,7 +2,7 @@ import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import { Box } from '@mui/material';
 import CssBaseline from "@mui/material/CssBaseline";
-import { StyledEngineProvider, ThemeProvider, adaptV4Theme, createTheme } from "@mui/material/styles";
+import { StyledEngineProvider, ThemeProvider, createTheme } from "@mui/material/styles";
 import makeStyles from '@mui/styles/makeStyles';
 import React from 'react';
 import { Route, HashRouter as Router, Routes, useLocation } from "react-router-dom";
@@ -43,13 +43,13 @@ const useStyles = makeStyles(_theme => ({
   },
 }));
 
-const theme = createTheme(adaptV4Theme({
+const theme = createTheme({
   typography: {
     button: {
       textTransform: "none"
     }
   }
-}));
+});
 
 function App() {
   const classes = useStyles();
