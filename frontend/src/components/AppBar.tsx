@@ -1,6 +1,5 @@
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import MenuIcon from "@mui/icons-material/Menu";
-import { Theme } from "@mui/material";
 import MuiAppBar from "@mui/material/AppBar";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
@@ -8,36 +7,15 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/system';
 import { CognitoUser } from "amazon-cognito-identity-js";
 import React, { useEffect, useState } from "react";
 import { AuthService } from "../services/AuthService";
-
-declare module '@mui/styles/defaultTheme' {
-  // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface DefaultTheme extends Theme { }
-}
-
-const useStyles = makeStyles(theme => ({
-  root: {
-    flexGrow: 1,
-  },
-  menuButton: {
-    marginRight: theme.spacing(2),
-  },
-  title: {
-    flexGrow: 1,
-  },
-  button: {
-    textTransform: "none"
-  },
-}));
 
 const authService = new AuthService();
 
 const AppBar: React.FC<unknown> = () => {
 
-  const classes = useStyles();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [user, setUser] = useState<CognitoUser | undefined>(undefined);
   const open = Boolean(anchorEl);
@@ -66,19 +44,22 @@ const AppBar: React.FC<unknown> = () => {
     setAnchorEl(null);
   };
 
+  const Root = styled('div')({
+    flexGrow: 1
+  })
   return (
-    <div className={classes.root}>
+    <Root>
       <MuiAppBar position="static">
         <Toolbar>
           <IconButton
             edge="start"
-            className={classes.menuButton}
+            sx={{ marginRight: 2 }}
             color="inherit"
             aria-label="menu"
             size="large">
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" className={classes.title}>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
             S3 Media Player
           </Typography>
           <div>
@@ -112,7 +93,7 @@ const AppBar: React.FC<unknown> = () => {
           </div>
         </Toolbar>
       </MuiAppBar>
-    </div>
+    </Root>
   );
 }
 

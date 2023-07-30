@@ -1,29 +1,19 @@
-import React, { useState, useEffect, useRef, SyntheticEvent } from 'react';
-import { Link, useNavigate } from "react-router-dom";
-import makeStyles from '@mui/styles/makeStyles';
-import Container from "@mui/material/Container";
-import useMusicPlayer from "../hooks/useMusicPlayer";
-import IconButton from '@mui/material/IconButton';
-import FastRewindIcon from '@mui/icons-material/FastRewind';
 import FastForwardIcon from '@mui/icons-material/FastForward';
-import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
-import SkipNextIcon from '@mui/icons-material/SkipNext';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import FastRewindIcon from '@mui/icons-material/FastRewind';
 import PauseIcon from '@mui/icons-material/Pause';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import SkipNextIcon from '@mui/icons-material/SkipNext';
+import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
+import Container from "@mui/material/Container";
+import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import React, { SyntheticEvent, useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from "react-router-dom";
+import useMusicPlayer from "../hooks/useMusicPlayer";
 import { PlaylistItem } from '../services/PlaylistService';
 
-const useStyles = makeStyles(_theme => ({
-    root: {
-        'text-align': 'left',
-        'font-family': '"Roboto", "Helvetica", "Arial", sans-serif',
-        'font-weight': 400,
-        'line-height': 1.43,
-    },
-    player: {
-        width: '50%'
-    }
-}));
+import { styled } from "@mui/system";
+
 
 const CurrentTrackLink: React.FC<{}> = () => {
     const { currentTrack, currentTime } = useMusicPlayer();
@@ -40,7 +30,6 @@ const PlayerControls: React.FC = () => {
     const { currentTrack, playerControl, isPlaying } = useMusicPlayer();
     const [url, setUrl] = useState<string | undefined>(undefined);
     const playerRef = useRef<HTMLAudioElement>(null);
-    const classes = useStyles();
     const navigate = useNavigate();
 
     playerControl.registerPlayer({
@@ -132,8 +121,17 @@ const PlayerControls: React.FC = () => {
         }
     }
 
+    const Audio = styled('audio')({
+        width: '50%'
+    });
+
     return (
-        <Container className={classes.root}>
+        <Container sx={{
+            textAlign: 'left',
+            fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+            fontWeight: 400,
+            lineHeight: 1.43,
+        }}>
             <CurrentTrackLink />
             <div>
                 <IconButton onClick={skipToPrevious} disabled={!isPlaying} size="large">
@@ -152,12 +150,14 @@ const PlayerControls: React.FC = () => {
                     <SkipNextIcon />
                 </IconButton>
             </div>
-            <audio ref={playerRef} className={classes.player} src={url} crossOrigin="anonymous" autoPlay={true} controls={true}
+            <Audio ref={playerRef} src={url} crossOrigin="anonymous"
+                autoPlay={true}
+                controls={true}
                 onTimeUpdate={onTimeUpdate}
-                onPlay={playerControl.onPlaying}
-                onPause={playerControl.onPause}
+                /*onPlay={playerControl.onPlaying}
+                onPause={playerControl.onPause}*/
                 onEnded={onEndedEvent} onError={onErrorEvent} onAbort={onAbortEvent} />
-        </Container>
+        </Container >
     );
 }
 

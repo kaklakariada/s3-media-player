@@ -3,7 +3,6 @@ import '@aws-amplify/ui-react/styles.css';
 import { Box } from '@mui/material';
 import CssBaseline from "@mui/material/CssBaseline";
 import { StyledEngineProvider, ThemeProvider, createTheme } from "@mui/material/styles";
-import makeStyles from '@mui/styles/makeStyles';
 import React from 'react';
 import { Route, HashRouter as Router, Routes, useLocation } from "react-router-dom";
 import './App.css';
@@ -34,15 +33,6 @@ function parsePath(pathname: string) {
   return { path: p, time };
 }
 
-const useStyles = makeStyles(_theme => ({
-  body: {
-    'text-align': 'left'
-  },
-  player: {
-    'margin': '5px'
-  },
-}));
-
 const theme = createTheme({
   typography: {
     button: {
@@ -52,19 +42,18 @@ const theme = createTheme({
 });
 
 function App() {
-  const classes = useStyles();
   return (
     <React.StrictMode>
       <StyledEngineProvider injectFirst>
         <ThemeProvider theme={theme}>
           <Authenticator>
             {() => (
-              <Box className={classes.body}>
+              <Box sx={{ textAlign: 'left' }}>
                 <CssBaseline />
                 <MusicPlayerProvider>
                   <Router>
                     <AppBar />
-                    <Box className={classes.player}>
+                    <Box sx={{ 'margin': '5px' }}>
                       <PlayerControls />
                     </Box>
                     <Routes>
