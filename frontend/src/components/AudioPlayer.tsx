@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef, SyntheticEvent } from 'react';
 import { Link, useNavigate } from "react-router-dom";
-import { makeStyles } from '@material-ui/core/styles';
-import Container from "@material-ui/core/Container";
+import makeStyles from '@mui/styles/makeStyles';
+import Container from "@mui/material/Container";
 import useMusicPlayer from "../hooks/useMusicPlayer";
-import IconButton from '@material-ui/core/IconButton';
-import FastRewindIcon from '@material-ui/icons/FastRewind';
-import FastForwardIcon from '@material-ui/icons/FastForward';
-import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
-import SkipNextIcon from '@material-ui/icons/SkipNext';
-import PlayArrowIcon from '@material-ui/icons/PlayArrow';
-import PauseIcon from '@material-ui/icons/Pause';
-import Typography from '@material-ui/core/Typography';
+import IconButton from '@mui/material/IconButton';
+import FastRewindIcon from '@mui/icons-material/FastRewind';
+import FastForwardIcon from '@mui/icons-material/FastForward';
+import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
+import SkipNextIcon from '@mui/icons-material/SkipNext';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import PauseIcon from '@mui/icons-material/Pause';
+import Typography from '@mui/material/Typography';
 import { PlaylistItem } from '../services/PlaylistService';
 
 const useStyles = makeStyles(_theme => ({
@@ -136,19 +136,19 @@ const PlayerControls: React.FC = () => {
         <Container className={classes.root}>
             <CurrentTrackLink />
             <div>
-                <IconButton onClick={skipToPrevious} disabled={!isPlaying}>
+                <IconButton onClick={skipToPrevious} disabled={!isPlaying} size="large">
                     <SkipPreviousIcon />
                 </IconButton>
-                <IconButton onClick={fastRewind} disabled={!isPlaying}>
+                <IconButton onClick={fastRewind} disabled={!isPlaying} size="large">
                     <FastRewindIcon />
                 </IconButton>
-                <IconButton onClick={playerControl.togglePlayPause}>
+                <IconButton onClick={playerControl.togglePlayPause} size="large">
                     {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
                 </IconButton>
-                <IconButton onClick={fastForward} disabled={!isPlaying}>
+                <IconButton onClick={fastForward} disabled={!isPlaying} size="large">
                     <FastForwardIcon />
                 </IconButton>
-                <IconButton onClick={skipToNext} disabled={!isPlaying}>
+                <IconButton onClick={skipToNext} disabled={!isPlaying} size="large">
                     <SkipNextIcon />
                 </IconButton>
             </div>
@@ -158,7 +158,7 @@ const PlayerControls: React.FC = () => {
                 onPause={playerControl.onPause}
                 onEnded={onEndedEvent} onError={onErrorEvent} onAbort={onAbortEvent} />
         </Container>
-    )
+    );
 }
 
 export default PlayerControls
