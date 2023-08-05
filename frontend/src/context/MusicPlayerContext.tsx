@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { PlaylistItem } from '../services/PlaylistService';
 
 interface Props {
-    children: JSX.Element
+    children: React.JSX.Element
 }
 
 interface State {
@@ -27,7 +27,7 @@ export class PlayerControl {
     constructor(state: State, setState: StateSetter) {
         this.#state = state;
         this.#setState = setState;
-        
+
         this.registerPlayer = this.registerPlayer.bind(this);
         this.playTrack = this.playTrack.bind(this);
         this.seekToTime = this.seekToTime.bind(this);
@@ -43,7 +43,7 @@ export class PlayerControl {
     }
 
     async playTrack(track: PlaylistItem) {
-        if (this.#state.currentTrack && this.#state.currentTrack.equals(track)) {
+        if (this.#state?.currentTrack && this.#state.currentTrack.equals(track)) {
             return;
         }
         console.log("Track changed to ", track);
@@ -71,10 +71,10 @@ export class PlayerControl {
     onTimeChanged(currentTime: number) {
         this.#setState(state => ({ ...state, currentTime }));
     }
-    
+
     setPlayingState(playing: boolean) {
         console.log("Set playing state ", playing);
-        if(playing) {
+        if (playing) {
             this.#setState(state => ({ ...state, isPlaying: playing }));
         } else {
             this.#setState(state => ({ ...state, isPlaying: playing, currentTime: undefined }));

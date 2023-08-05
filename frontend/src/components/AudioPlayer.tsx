@@ -1,18 +1,18 @@
+import Container from "@mui/material/Container";
+import Typography from '@mui/material/Typography';
+import React, { SyntheticEvent, useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from "react-router-dom";
+import useMusicPlayer from "../hooks/useMusicPlayer";
+
 import FastForwardIcon from '@mui/icons-material/FastForward';
 import FastRewindIcon from '@mui/icons-material/FastRewind';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
-import Container from "@mui/material/Container";
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import React, { SyntheticEvent, useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from "react-router-dom";
-import useMusicPlayer from "../hooks/useMusicPlayer";
-import { PlaylistItem } from '../services/PlaylistService';
-
+import IconButton from "@mui/material/IconButton/IconButton";
 import { styled } from "@mui/system";
+import { PlaylistItem } from "../services/PlaylistService";
 
 
 const CurrentTrackLink: React.FC<{}> = () => {
@@ -73,7 +73,7 @@ const PlayerControls: React.FC = () => {
     }
 
     function skipToPrevious() {
-        if (currentTrack && currentTrack.prev) {
+        if (currentTrack?.prev) {
             startPlaying(currentTrack.prev);
         } else {
             console.log("No previous track. Stop playing.")
@@ -81,7 +81,7 @@ const PlayerControls: React.FC = () => {
     }
 
     function skipToNext() {
-        if (currentTrack && currentTrack.next) {
+        if (currentTrack?.next) {
             startPlaying(currentTrack.next);
         } else {
             console.log("No next track. Stop playing.")
@@ -134,6 +134,7 @@ const PlayerControls: React.FC = () => {
         }}>
             <CurrentTrackLink />
             <div>
+
                 <IconButton onClick={skipToPrevious} disabled={!isPlaying} size="large">
                     <SkipPreviousIcon />
                 </IconButton>
@@ -143,20 +144,24 @@ const PlayerControls: React.FC = () => {
                 <IconButton onClick={playerControl.togglePlayPause} size="large">
                     {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
                 </IconButton>
+
                 <IconButton onClick={fastForward} disabled={!isPlaying} size="large">
                     <FastForwardIcon />
                 </IconButton>
                 <IconButton onClick={skipToNext} disabled={!isPlaying} size="large">
                     <SkipNextIcon />
                 </IconButton>
+
             </div>
             <Audio ref={playerRef} src={url} crossOrigin="anonymous"
                 autoPlay={true}
                 controls={true}
                 onTimeUpdate={onTimeUpdate}
-                /*onPlay={playerControl.onPlaying}
-                onPause={playerControl.onPause}*/
-                onEnded={onEndedEvent} onError={onErrorEvent} onAbort={onAbortEvent} />
+                onPlay={playerControl.onPlaying}
+                onPause={playerControl.onPause}
+                onEnded={onEndedEvent}
+                onError={onErrorEvent}
+                onAbort={onAbortEvent} />
         </Container >
     );
 }
