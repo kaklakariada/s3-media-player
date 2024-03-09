@@ -156,7 +156,7 @@ const PlayerControls: React.FC = () => {
             <Audio ref={playerRef} src={url} crossOrigin="anonymous"
                 autoPlay={true}
                 controls={true}
-                onTimeUpdate={onTimeUpdate}
+                //onTimeUpdate={onTimeUpdate}
                 onPlay={playerControl.onPlaying}
                 onPause={playerControl.onPause}
                 onEnded={onEndedEvent}

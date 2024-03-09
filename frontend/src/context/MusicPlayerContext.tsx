@@ -73,8 +73,11 @@ export class PlayerControl {
     }
 
     setPlayingState(playing: boolean) {
-        console.log("Set playing state ", playing);
-        if (playing) {
+        if (playing == this.#state.isPlaying) {
+            return
+        }
+        console.log("Set playing state ", playing, this.#state);
+        if(playing) {
             this.#setState(state => ({ ...state, isPlaying: playing }));
         } else {
             this.#setState(state => ({ ...state, isPlaying: playing, currentTime: undefined }));
