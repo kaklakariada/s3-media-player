@@ -13,18 +13,18 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn';
 import useMusicPlayer from "../hooks/useMusicPlayer";
 import { Playlist, PlaylistItem, PlaylistService } from "../services/PlaylistService";
-import { Typography } from "@mui/material";
+import { ListItemButton, Typography } from "@mui/material";
 
 const s3 = new S3Service();
 const playlistService = new PlaylistService();
 
 const FolderListItem: React.FC<{ folder: S3Object }> = ({ folder }) => {
-    return (<ListItem button component={Link} to={`/${folder.key}`}>
+    return (<ListItemButton component={Link} to={`/${folder.key}`}>
         <ListItemIcon>
             <FolderIcon />
         </ListItemIcon>
         <ListItemText primary={folder.fileName} />
-    </ListItem>);
+    </ListItemButton>);
 }
 
 const OtherFileItem: React.FC<{ file: PlaylistItem }> = ({ file }) => {
@@ -40,12 +40,12 @@ const AudioFileItem: React.FC<{ file: PlaylistItem }> = ({ file }) => {
     const { currentTrack, isPlaying } = useMusicPlayer();
     const isCurrentTrack = file.equals(currentTrack);
     const state = isCurrentTrack ? (isPlaying ? 'playing' : 'paused') : '';
-    return (<ListItem button component={Link} to={`/${file.track.key}`}>
+    return (<ListItemButton component={Link} to={`/${file.track.key}`}>
         <ListItemIcon>
             <AudiotrackIcon />
         </ListItemIcon>
         <ListItemText primary={file.track.fileName} secondary={state} />
-    </ListItem>);
+    </ListItemButton>);
 }
 
 const MediaList: React.FC<{ bucket: string, path: string, time?: number }> = ({ bucket, path, time }) => {
@@ -105,12 +105,12 @@ const MediaList: React.FC<{ bucket: string, path: string, time?: number }> = ({ 
 
     const parentPath = `/${currentFolder.getParentFolder().key}`;
     const upOneLevel: JSX.Element = (
-        <ListItem button component={Link} to={parentPath} disabled={currentFolder.key === ''}>
+        <ListItemButton component={Link} to={parentPath} disabled={currentFolder.key === ''}>
             <ListItemIcon >
                 <KeyboardReturnIcon />
             </ListItemIcon>
             <ListItemText primary={`Up one level to ${parentPath}`} />
-        </ListItem>);
+        </ListItemButton>);
 
     return (
         <Container>

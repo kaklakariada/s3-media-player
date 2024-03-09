@@ -19,7 +19,7 @@ const RouterChild: React.FC = () => {
 }
 
 function parsePath(pathname: string) {
-  let path = pathname.startsWith('/') ? pathname.substr(1) : pathname;
+  let path = pathname.startsWith('/') ? pathname.substring(1) : pathname;
   const matcher = path.match(/\/?([^&]+)(&time=(\d+))?/);
   if (!matcher) {
     console.warn(`Error parsing path '${pathname}'`);
