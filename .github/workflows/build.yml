@@ -43,11 +43,10 @@ jobs:
         };
         EOF
 
+    - name: Install dependencies for infrastructure
+      run: cd infrastructure && npm ci
     - name: Build infrastructure
-      run: |
-        cd infrastructure
-        npm ci
-        npm run cdk synth
+      run: cd infrastructure && npm run cdk synth
 
     - name: Configure frontend
       run: |
@@ -63,8 +62,8 @@ jobs:
         };
         EOF
 
+    - name: Install frontend dependencies
+      run: cd frontend && npm ci
+
     - name: Build frontend
-      run: |
-        cd frontend
-        npm ci
-        npm run build
+      run: cd frontend && npm run build
