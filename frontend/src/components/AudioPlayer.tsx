@@ -1,29 +1,19 @@
-import React, { useState, useEffect, useRef, SyntheticEvent } from 'react';
+import Container from "@mui/material/Container";
+import Typography from '@mui/material/Typography';
+import React, { SyntheticEvent, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
-import { makeStyles } from '@material-ui/core/styles';
-import Container from "@material-ui/core/Container";
 import useMusicPlayer from "../hooks/useMusicPlayer";
-import IconButton from '@material-ui/core/IconButton';
-import FastRewindIcon from '@material-ui/icons/FastRewind';
-import FastForwardIcon from '@material-ui/icons/FastForward';
-import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
-import SkipNextIcon from '@material-ui/icons/SkipNext';
-import PlayArrowIcon from '@material-ui/icons/PlayArrow';
-import PauseIcon from '@material-ui/icons/Pause';
-import Typography from '@material-ui/core/Typography';
-import { PlaylistItem } from '../services/PlaylistService';
 
-const useStyles = makeStyles(_theme => ({
-    root: {
-        'text-align': 'left',
-        'font-family': '"Roboto", "Helvetica", "Arial", sans-serif',
-        'font-weight': 400,
-        'line-height': 1.43,
-    },
-    player: {
-        width: '50%'
-    }
-}));
+import FastForwardIcon from '@mui/icons-material/FastForward';
+import FastRewindIcon from '@mui/icons-material/FastRewind';
+import PauseIcon from '@mui/icons-material/Pause';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import SkipNextIcon from '@mui/icons-material/SkipNext';
+import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
+import IconButton from "@mui/material/IconButton/IconButton";
+import { styled } from "@mui/system";
+import { PlaylistItem } from "../services/PlaylistService";
+
 
 const CurrentTrackLink: React.FC<{}> = () => {
     const { currentTrack, currentTime } = useMusicPlayer();
@@ -40,7 +30,6 @@ const PlayerControls: React.FC = () => {
     const { currentTrack, playerControl, isPlaying } = useMusicPlayer();
     const [url, setUrl] = useState<string | undefined>(undefined);
     const playerRef = useRef<HTMLAudioElement>(null);
-    const classes = useStyles();
     const navigate = useNavigate();
 
     playerControl.registerPlayer({
@@ -84,7 +73,7 @@ const PlayerControls: React.FC = () => {
     }
 
     function skipToPrevious() {
-        if (currentTrack && currentTrack.prev) {
+        if (currentTrack?.prev) {
             startPlaying(currentTrack.prev);
         } else {
             console.log("No previous track. Stop playing.")
@@ -92,7 +81,7 @@ const PlayerControls: React.FC = () => {
     }
 
     function skipToNext() {
-        if (currentTrack && currentTrack.next) {
+        if (currentTrack?.next) {
             startPlaying(currentTrack.next);
         } else {
             console.log("No next track. Stop playing.")
@@ -132,33 +121,46 @@ const PlayerControls: React.FC = () => {
         }
     }
 
+    const Audio = styled('audio')({
+        width: '50%'
+    });
+
     return (
-        <Container className={classes.root}>
+        <Container sx={{
+            textAlign: 'left',
+            fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+            fontWeight: 400,
+            lineHeight: 1.43,
+        }}>
             <CurrentTrackLink />
             <div>
-                <IconButton onClick={skipToPrevious} disabled={!isPlaying}>
+                <IconButton onClick={skipToPrevious} disabled={!isPlaying} size="large">
                     <SkipPreviousIcon />
                 </IconButton>
-                <IconButton onClick={fastRewind} disabled={!isPlaying}>
+                <IconButton onClick={fastRewind} disabled={!isPlaying} size="large">
                     <FastRewindIcon />
                 </IconButton>
-                <IconButton onClick={playerControl.togglePlayPause}>
+                <IconButton onClick={playerControl.togglePlayPause} size="large">
                     {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
                 </IconButton>
-                <IconButton onClick={fastForward} disabled={!isPlaying}>
+                <IconButton onClick={fastForward} disabled={!isPlaying} size="large">
                     <FastForwardIcon />
                 </IconButton>
-                <IconButton onClick={skipToNext} disabled={!isPlaying}>
+                <IconButton onClick={skipToNext} disabled={!isPlaying} size="large">
                     <SkipNextIcon />
                 </IconButton>
             </div>
-            <audio ref={playerRef} className={classes.player} src={url} crossOrigin="anonymous" autoPlay={true} controls={true}
+            <Audio ref={playerRef} src={url} crossOrigin="anonymous"
+                autoPlay={true}
+                controls={true}
                 onTimeUpdate={onTimeUpdate}
                 onPlay={playerControl.onPlaying}
                 onPause={playerControl.onPause}
-                onEnded={onEndedEvent} onError={onErrorEvent} onAbort={onAbortEvent} />
-        </Container>
-    )
+                onEnded={onEndedEvent}
+                onError={onErrorEvent}
+                onAbort={onAbortEvent} />
+        </Container >
+    );
 }
 
 export default PlayerControls

@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { PlaylistItem } from '../services/PlaylistService';
 
 interface Props {
-    children: JSX.Element
+    children: React.JSX.Element
 }
 
-interface State {
+interface TrackState {
     currentTrack: PlaylistItem | undefined;
+}
+
+interface PlayingState {
     currentTime: number | undefined;
     isPlaying: boolean;
 }
@@ -17,17 +20,22 @@ interface PlayerCallback {
     pause: () => void;
 }
 
-type StateSetter = React.Dispatch<React.SetStateAction<State>>;
+type TrackStateSetter = React.Dispatch<React.SetStateAction<TrackState>>;
+type PlayingStateSetter = React.Dispatch<React.SetStateAction<PlayingState>>;
 
 export class PlayerControl {
-    #state: State;
-    #setState: StateSetter;
+    #trackState: TrackState;
+    #setTrackState: TrackStateSetter;
+    #playingState: PlayingState;
+    #setPlayingState: PlayingStateSetter;
     #player: PlayerCallback | undefined;
 
-    constructor(state: State, setState: StateSetter) {
-        this.#state = state;
-        this.#setState = setState;
-        
+    constructor(state: TrackState, setState: TrackStateSetter, playingState: PlayingState, setPlayingState: PlayingStateSetter) {
+        this.#trackState = state;
+        this.#setTrackState = setState;
+        this.#playingState = playingState;
+        this.#setPlayingState = setPlayingState;
+
         this.registerPlayer = this.registerPlayer.bind(this);
         this.playTrack = this.playTrack.bind(this);
         this.seekToTime = this.seekToTime.bind(this);
@@ -43,11 +51,11 @@ export class PlayerControl {
     }
 
     async playTrack(track: PlaylistItem) {
-        if (this.#state.currentTrack && this.#state.currentTrack.equals(track)) {
+        if (this.#trackState?.currentTrack && this.#trackState.currentTrack.equals(track)) {
             return;
         }
         console.log("Track changed to ", track);
-        this.#setState(state => ({ ...state, currentTrack: track }));
+        this.#setTrackState(state => ({ ...state, currentTrack: track }));
     }
 
     seekToTime(seconds: number) {
@@ -65,35 +73,49 @@ export class PlayerControl {
     }
 
     togglePlayPause() {
-        this.setPlayingState(!this.#state.isPlaying);
+        this.setPlayingState(!this.#playingState.isPlaying);
     }
 
     onTimeChanged(currentTime: number) {
-        this.#setState(state => ({ ...state, currentTime }));
+        this.#setPlayingState(state => ({ ...state, currentTime }));
     }
-    
+
     setPlayingState(playing: boolean) {
-        console.log("Set playing state ", playing);
-        if(playing) {
-            this.#setState(state => ({ ...state, isPlaying: playing }));
+        if (playing === this.#playingState.isPlaying) {
+            return
+        }
+        console.log("Set playing state ", playing, this.#playingState);
+        if (playing) {
+            this.#setPlayingState(state => ({ ...state, isPlaying: playing }));
         } else {
-            this.#setState(state => ({ ...state, isPlaying: playing, currentTime: undefined }));
+            this.#setPlayingState(state => ({ ...state, isPlaying: playing, currentTime: undefined }));
         }
     }
 }
 
 interface Context {
-    state: State;
-    setState: StateSetter;
+    currentTrackState: TrackState;
+    playingState: PlayingState;
+    setTrackState: TrackStateSetter;
     playerControl: PlayerControl;
 }
 const initialContext: Context = createDefaultContext();
 const MusicPlayerContext = React.createContext(initialContext);
 
 const MusicPlayerProvider = (props: Props) => {
-    const [state, setState] = useState<State>(createDefaultState());
+    const [trackState, setTrackState] = useState<TrackState>(createDefaultState());
+    const [playingState, setPlayingState] = useState<PlayingState>({ currentTime: undefined, isPlaying: false });
+    const value = useMemo(() => {
+        console.log(`Create new provider for state`, trackState, playingState);
+        return {
+            currentTrackState: trackState, setTrackState,
+            playingState,
+            playerControl: new PlayerControl(trackState, setTrackState, playingState, setPlayingState)
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [trackState]);
     return (
-        <MusicPlayerContext.Provider value={{ state, setState, playerControl: new PlayerControl(state, setState) }}>
+        <MusicPlayerContext.Provider value={value}>
             {props.children}
         </MusicPlayerContext.Provider>
     );
@@ -103,15 +125,15 @@ export { MusicPlayerContext, MusicPlayerProvider };
 
 function createDefaultContext(): Context {
     const defaultState = createDefaultState();
-    const defaultStateSetter: StateSetter = () => defaultState;
-    const defaultPlayerControl = new PlayerControl(defaultState, defaultStateSetter);
-    return { state: defaultState, setState: defaultStateSetter, playerControl: defaultPlayerControl };
+    const playingState: PlayingState = { currentTime: undefined, isPlaying: false };
+    const defaultStateSetter: TrackStateSetter = () => defaultState;
+    const defaultPlayingStateSetter: PlayingStateSetter = () => playingState;
+    const defaultPlayerControl = new PlayerControl(defaultState, defaultStateSetter, playingState, defaultPlayingStateSetter);
+    return { currentTrackState: defaultState, playingState, setTrackState: defaultStateSetter, playerControl: defaultPlayerControl };
 }
 
-function createDefaultState(): State {
+function createDefaultState(): TrackState {
     return {
         currentTrack: undefined,
-        currentTime: undefined,
-        isPlaying: false,
     };
 }

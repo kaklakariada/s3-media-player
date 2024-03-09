@@ -1,30 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import Container from "@material-ui/core/Container";
-import CircularProgress from "@material-ui/core/CircularProgress";
+import Container from "@mui/material/Container";
+import CircularProgress from "@mui/material/CircularProgress";
 import { S3Service, S3Object } from "../services/S3Service";
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import FolderIcon from '@material-ui/icons/Folder';
-import AudiotrackIcon from '@material-ui/icons/Audiotrack';
-import InsertDriveFileIcon from '@material-ui/icons/InsertDriveFile';
-import KeyboardReturnIcon from '@material-ui/icons/KeyboardReturn';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import FolderIcon from '@mui/icons-material/Folder';
+import AudiotrackIcon from '@mui/icons-material/Audiotrack';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn';
 import useMusicPlayer from "../hooks/useMusicPlayer";
 import { Playlist, PlaylistItem, PlaylistService } from "../services/PlaylistService";
-import { Typography } from "@material-ui/core";
+import { ListItemButton, Typography } from "@mui/material";
 
 const s3 = new S3Service();
 const playlistService = new PlaylistService();
 
 const FolderListItem: React.FC<{ folder: S3Object }> = ({ folder }) => {
-    return (<ListItem button component={Link} to={`/${folder.key}`}>
+    return (<ListItemButton component={Link} to={`/${folder.key}`}>
         <ListItemIcon>
             <FolderIcon />
         </ListItemIcon>
         <ListItemText primary={folder.fileName} />
-    </ListItem>);
+    </ListItemButton>);
 }
 
 const OtherFileItem: React.FC<{ file: PlaylistItem }> = ({ file }) => {
@@ -40,12 +40,12 @@ const AudioFileItem: React.FC<{ file: PlaylistItem }> = ({ file }) => {
     const { currentTrack, isPlaying } = useMusicPlayer();
     const isCurrentTrack = file.equals(currentTrack);
     const state = isCurrentTrack ? (isPlaying ? 'playing' : 'paused') : '';
-    return (<ListItem button component={Link} to={`/${file.track.key}`}>
+    return (<ListItemButton component={Link} to={`/${file.track.key}`}>
         <ListItemIcon>
             <AudiotrackIcon />
         </ListItemIcon>
         <ListItemText primary={file.track.fileName} secondary={state} />
-    </ListItem>);
+    </ListItemButton>);
 }
 
 const MediaList: React.FC<{ bucket: string, path: string, time?: number }> = ({ bucket, path, time }) => {
@@ -105,12 +105,12 @@ const MediaList: React.FC<{ bucket: string, path: string, time?: number }> = ({ 
 
     const parentPath = `/${currentFolder.getParentFolder().key}`;
     const upOneLevel: JSX.Element = (
-        <ListItem button component={Link} to={parentPath} disabled={currentFolder.key === ''}>
+        <ListItemButton component={Link} to={parentPath} disabled={currentFolder.key === ''}>
             <ListItemIcon >
                 <KeyboardReturnIcon />
             </ListItemIcon>
             <ListItemText primary={`Up one level to ${parentPath}`} />
-        </ListItem>);
+        </ListItemButton>);
 
     return (
         <Container>

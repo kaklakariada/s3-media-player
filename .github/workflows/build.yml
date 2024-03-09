@@ -1,25 +1,26 @@
 name: Build
 
-on: [push]
+on:
+  push:
+    branches: [main]
+  pull_request:
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: "bash"
 
     steps:
     - uses: actions/checkout@v4
 
-    - uses: actions/cache@v4
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
-
     - uses: actions/setup-node@v4
       with:
-        node-version: '12.x'
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: "*/package-lock.json"
 
     - name: Configure infrastructure
       run: |
@@ -37,11 +38,10 @@ jobs:
         };
         EOF
 
+    - name: Install dependencies for infrastructure
+      run: cd infrastructure && npm ci
     - name: Build infrastructure
-      run: |
-        cd infrastructure
-        npm ci
-        npm run cdk synth
+      run: cd infrastructure && npm run cdk synth
 
     - name: Configure frontend
       run: |
@@ -57,8 +57,8 @@ jobs:
         };
         EOF
 
+    - name: Install frontend dependencies
+      run: cd frontend && npm ci
+
     - name: Build frontend
-      run: |
-        cd frontend
-        npm ci
-        npm run build
+      run: cd frontend && npm run build

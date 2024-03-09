@@ -1,39 +1,23 @@
+import AccountCircle from "@mui/icons-material/AccountCircle";
+import MenuIcon from "@mui/icons-material/Menu";
+import MuiAppBar from "@mui/material/AppBar";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import { styled } from '@mui/system';
 import React, { useEffect, useState } from "react";
-import { makeStyles } from "@material-ui/core/styles";
-import MuiAppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import Typography from "@material-ui/core/Typography";
-import IconButton from "@material-ui/core/IconButton";
-import Button from "@material-ui/core/Button";
-import MenuIcon from "@material-ui/icons/Menu";
-import AccountCircle from "@material-ui/icons/AccountCircle";
-import MenuItem from "@material-ui/core/MenuItem";
-import Menu from "@material-ui/core/Menu";
 import { AuthService } from "../services/AuthService";
-import { CognitoUser } from "amazon-cognito-identity-js";
-
-const useStyles = makeStyles(theme => ({
-  root: {
-    flexGrow: 1,
-  },
-  menuButton: {
-    marginRight: theme.spacing(2),
-  },
-  title: {
-    flexGrow: 1,
-  },
-  button: {
-    textTransform: "none"
-  },
-}));
+import { AuthUser } from "@aws-amplify/auth";
 
 const authService = new AuthService();
 
 const AppBar: React.FC<unknown> = () => {
 
-  const classes = useStyles();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
-  const [user, setUser] = useState<CognitoUser | undefined>(undefined);
+  const [user, setUser] = useState<AuthUser | undefined>(undefined);
   const open = Boolean(anchorEl);
 
   useEffect(() => {
@@ -60,14 +44,22 @@ const AppBar: React.FC<unknown> = () => {
     setAnchorEl(null);
   };
 
+  const Root = styled('div')({
+    flexGrow: 1
+  })
   return (
-    <div className={classes.root}>
+    <Root>
       <MuiAppBar position="static">
         <Toolbar>
-          <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
+          <IconButton
+            edge="start"
+            sx={{ marginRight: 2 }}
+            color="inherit"
+            aria-label="menu"
+            size="large">
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" className={classes.title}>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
             S3 Media Player
           </Typography>
           <div>
@@ -79,7 +71,7 @@ const AppBar: React.FC<unknown> = () => {
               color="inherit"
               endIcon={<AccountCircle />}
             >
-              {user ? user.getUsername() : '?'}
+              {user ? user.username : '?'}
             </Button>
             <Menu
               id="menu-appbar"
@@ -101,7 +93,7 @@ const AppBar: React.FC<unknown> = () => {
           </div>
         </Toolbar>
       </MuiAppBar>
-    </div>
+    </Root>
   );
 }
 
