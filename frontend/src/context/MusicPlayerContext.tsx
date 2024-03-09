@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { PlaylistItem } from '../services/PlaylistService';
 
 interface Props {
@@ -69,18 +69,18 @@ export class PlayerControl {
     }
 
     onTimeChanged(currentTime: number) {
-        this.#setState(state => ({ ...state, currentTime }));
+        //this.#setState(state => ({ ...state, currentTime }));
     }
 
     setPlayingState(playing: boolean) {
-        if (playing == this.#state.isPlaying) {
+        if (playing === this.#state.isPlaying) {
             return
         }
         console.log("Set playing state ", playing, this.#state);
         if(playing) {
-            this.#setState(state => ({ ...state, isPlaying: playing }));
+            //this.#setState(state => ({ ...state, isPlaying: playing }));
         } else {
-            this.#setState(state => ({ ...state, isPlaying: playing, currentTime: undefined }));
+            //this.#setState(state => ({ ...state, isPlaying: playing, currentTime: undefined }));
         }
     }
 }
@@ -95,8 +95,12 @@ const MusicPlayerContext = React.createContext(initialContext);
 
 const MusicPlayerProvider = (props: Props) => {
     const [state, setState] = useState<State>(createDefaultState());
+    const value = useMemo(()=> { 
+        console.log(`Create new provider for state `, state);
+        return { state, setState, playerControl: new PlayerControl(state, setState) };
+    }, [state]);
     return (
-        <MusicPlayerContext.Provider value={{ state, setState, playerControl: new PlayerControl(state, setState) }}>
+        <MusicPlayerContext.Provider value={value}>
             {props.children}
         </MusicPlayerContext.Provider>
     );
