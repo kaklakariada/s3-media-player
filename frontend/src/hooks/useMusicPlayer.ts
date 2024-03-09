@@ -2,12 +2,12 @@ import { useContext } from 'react';
 import { MusicPlayerContext } from "../context/MusicPlayerContext";
 
 const useMusicPlayer = () => {
-  const { state, playerControl } = useContext(MusicPlayerContext);
+  const { currentTrackState, playingState,  playerControl } = useContext(MusicPlayerContext);
 
   return {
-    currentTrack: state.currentTrack,
-    currentTime: state.currentTime,
-    isPlaying: state.isPlaying,
+    currentTrack: currentTrackState.currentTrack,
+    currentTime: playingState.currentTime,
+    isPlaying: playingState.isPlaying,
     playerControl,
   }
 };
