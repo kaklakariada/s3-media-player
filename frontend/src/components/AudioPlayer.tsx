@@ -134,7 +134,6 @@ const PlayerControls: React.FC = () => {
         }}>
             <CurrentTrackLink />
             <div>
-
                 <IconButton onClick={skipToPrevious} disabled={!isPlaying} size="large">
                     <SkipPreviousIcon />
                 </IconButton>
@@ -144,14 +143,12 @@ const PlayerControls: React.FC = () => {
                 <IconButton onClick={playerControl.togglePlayPause} size="large">
                     {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
                 </IconButton>
-
                 <IconButton onClick={fastForward} disabled={!isPlaying} size="large">
                     <FastForwardIcon />
                 </IconButton>
                 <IconButton onClick={skipToNext} disabled={!isPlaying} size="large">
                     <SkipNextIcon />
                 </IconButton>
-
             </div>
             <Audio ref={playerRef} src={url} crossOrigin="anonymous"
                 autoPlay={true}
