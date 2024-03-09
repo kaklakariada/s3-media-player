@@ -1,33 +1,25 @@
-import { Auth } from "aws-amplify";
-import { CognitoUser } from "amazon-cognito-identity-js";
-
-import { ICredentials } from '@aws-amplify/core';
+import { fetchAuthSession,  AuthSession, signOut, getCurrentUser, AuthUser } from "aws-amplify/auth";
 
 export class AuthService {
 
     async getIdToken(): Promise<string> {
-        const user = await this.currentAuthenticatedUser();
-        const session = user.getSignInUserSession();
-        if (!session) {
-            throw new Error(`No session found for user ${user.getUsername()}`);
+        const credentails = await this.getAuthSession()
+        const token = credentails.tokens?.idToken?.toString()
+        if (!token) {
+            throw new Error(`No session found for user`);
         }
-        return session.getIdToken().getJwtToken();
+        return token
     }
 
-    currentAuthenticatedUser(): Promise<CognitoUser> {
-        return Auth.currentAuthenticatedUser();
+    async currentAuthenticatedUser(): Promise<AuthUser> {
+        return await getCurrentUser();
     }
 
-    getCredentials(): Promise<ICredentials> {
-        return Auth.currentUserCredentials()
-            .then((cred) => Auth.essentialCredentials(cred))
-            .catch((err: any) => {
-                console.error("Error getting credentials", err);
-                throw new Error(err);
-            });
+    async getAuthSession(): Promise<AuthSession> {
+        return await fetchAuthSession();
     }
 
     signOut() {
-        Auth.signOut({ global: true });
+        signOut({ global: true });
     }
 }

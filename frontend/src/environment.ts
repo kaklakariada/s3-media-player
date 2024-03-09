@@ -1,4 +1,5 @@
 import { CONFIG } from "./frontend-config";
+import { ResourcesConfig } from "aws-amplify";
 
 export interface FrontendConfig {
     region: string;
@@ -8,22 +9,10 @@ export interface FrontendConfig {
     mediaBucket: string;
 }
 
-interface AmplifyConfig {
-    Auth: {
-        identityPoolId: string;
-        identityPoolRegion: string;
-        region: string;
-        userPoolId: string;
-        userPoolWebClientId: string;
-        mandatorySignIn: boolean;
-        authenticationFlowType: string;
-    };
-}
-
 interface EnvironmentConfig {
     region: string;
     mediaBucket: string;
-    amplifyConfig: AmplifyConfig;
+    amplifyConfig: ResourcesConfig;
 }
 
 const config: FrontendConfig = CONFIG;
@@ -33,13 +22,12 @@ const environment: EnvironmentConfig = {
     mediaBucket: config.mediaBucket,
     amplifyConfig: {
         Auth: {
-            identityPoolId: config.cognitoIdentityPoolId,
-            identityPoolRegion: config.region,
-            region: config.region,
-            userPoolId: config.cognitoUserPoolId,
-            userPoolWebClientId: config.cognitoUserPoolWebClientId,
-            mandatorySignIn: true,
-            authenticationFlowType: "USER_SRP_AUTH"
+            Cognito: {
+                userPoolId: config.cognitoUserPoolId,
+                userPoolClientId: config.cognitoUserPoolWebClientId,
+                identityPoolId: config.cognitoIdentityPoolId,
+                allowGuestAccess: false,
+            }
         },
     }
 };

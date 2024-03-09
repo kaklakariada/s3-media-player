@@ -8,16 +8,16 @@ import MenuItem from "@mui/material/MenuItem";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import { styled } from '@mui/system';
-import { CognitoUser } from "amazon-cognito-identity-js";
 import React, { useEffect, useState } from "react";
 import { AuthService } from "../services/AuthService";
+import { AuthUser } from "@aws-amplify/auth";
 
 const authService = new AuthService();
 
 const AppBar: React.FC<unknown> = () => {
 
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
-  const [user, setUser] = useState<CognitoUser | undefined>(undefined);
+  const [user, setUser] = useState<AuthUser | undefined>(undefined);
   const open = Boolean(anchorEl);
 
   useEffect(() => {
@@ -71,7 +71,7 @@ const AppBar: React.FC<unknown> = () => {
               color="inherit"
               endIcon={<AccountCircle />}
             >
-              {user ? user.getUsername() : '?'}
+              {user ? user.username : '?'}
             </Button>
             <Menu
               id="menu-appbar"

@@ -1,11 +1,9 @@
 import S3, { ListObjectsV2Request } from "aws-sdk/clients/s3";
 import { AuthService } from "./AuthService";
 import environment from '../environment';
-import { ICredentials } from '@aws-amplify/core';
 
 interface State {
     s3: S3;
-    credentials: ICredentials;
 }
 
 export class S3Client {
@@ -34,24 +32,16 @@ export class S3Client {
     }
 
     private async createClient(): Promise<State> {
-        const credentials = await this.getCredentials();
+        const session = await this.authService.getAuthSession();
         const s3Config: S3.Types.ClientConfiguration = {
             region: environment.region,
-            credentials: credentials
+            credentials: session.credentials
         };
-        return { s3: new S3(s3Config), credentials };
-    }
-
-    private async getCredentials() {
-        try {
-            return await this.authService.getCredentials();
-        } catch(error) {
-            throw Error("Error getting credentials: " + error);
-        }
+        return { s3: new S3(s3Config) };
     }
 
     private async getS3(): Promise<S3> {
-        if (!this.state || !this.state.credentials.authenticated) {
+        if (!this.state || !this.state.s3) {
             this.state = await this.createClient();
         }
         return this.state.s3;
