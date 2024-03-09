@@ -33,7 +33,7 @@ export class PlayerControl {
     constructor(state: TrackState, setState: TrackStateSetter, playingState: PlayingState, setPlayingState: PlayingStateSetter) {
         this.#trackState = state;
         this.#setTrackState = setState;
-        this.#playingState=playingState;
+        this.#playingState = playingState;
         this.#setPlayingState = setPlayingState;
 
         this.registerPlayer = this.registerPlayer.bind(this);
@@ -104,12 +104,15 @@ const MusicPlayerContext = React.createContext(initialContext);
 
 const MusicPlayerProvider = (props: Props) => {
     const [trackState, setTrackState] = useState<TrackState>(createDefaultState());
-    const [playingState, setPlayingState] = useState<PlayingState>( {currentTime:undefined, isPlaying: false});
+    const [playingState, setPlayingState] = useState<PlayingState>({ currentTime: undefined, isPlaying: false });
     const value = useMemo(() => {
         console.log(`Create new provider for state`, trackState, playingState);
-        return { currentTrackState: trackState, setTrackState, 
+        return {
+            currentTrackState: trackState, setTrackState,
             playingState,
-            playerControl: new PlayerControl(trackState, setTrackState, playingState, setPlayingState) };
+            playerControl: new PlayerControl(trackState, setTrackState, playingState, setPlayingState)
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [trackState]);
     return (
         <MusicPlayerContext.Provider value={value}>
