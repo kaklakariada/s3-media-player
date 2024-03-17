@@ -3,6 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "cloudfront-deploy": "node deploy/deploy.js",
+    "deploy": "npm-run-all build cloudfront-deploy"
+  },
   "dependencies": {
     "@aws-amplify/ui-react": "^6.1.5",
     "@emotion/react": "^11.11.4",
@@ -19,16 +26,18 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.3",
-    "react-scripts": "^5.0.1",
     "typescript": "^4.9.5",
     "util": "^0.12.5"
   },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "cloudfront-deploy": "node deploy/deploy.js",
-    "deploy": "npm-run-all build cloudfront-deploy"
+  "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^14.2.1",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.25",
+    "npm-run-all": "^4.1.5",
+    "react-scripts": "^5.0.1"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -44,14 +53,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@testing-library/jest-dom": "^6.4.2",
-    "@testing-library/react": "^14.2.1",
-    "@testing-library/user-event": "^14.5.2",
-    "@types/jest": "^29.5.12",
-    "@types/node": "^20.11.25",
-    "npm-run-all": "^4.1.5"
   }
 }
