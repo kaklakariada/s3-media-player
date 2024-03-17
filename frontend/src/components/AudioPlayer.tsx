@@ -47,10 +47,10 @@ const PlayerControls: React.FC = () => {
     });
 
     async function updateUrl(track: PlaylistItem | undefined) {
-        if (track && !track.track.isFolder) {
+        if (track && track.track.isFile) {
             const trackUrl = await track.track.getUrl();
             console.log(`Current track has changed to ${track.track.fileName}. Playing URL...`);
-            setUrl(trackUrl);
+            setUrl(trackUrl.url);
         } else {
             console.log("Invalid item, skip updating url", track);
             setUrl(undefined);

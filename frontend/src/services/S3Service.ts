@@ -1,16 +1,16 @@
 import S3, { Bucket, ListObjectsV2Request } from 'aws-sdk/clients/s3';
 import { AuthService } from './AuthService';
-import { S3Client } from './AuthenticatedS3Client';
+import { S3Client, SignedUrl } from './AuthenticatedS3Client';
 
 const s3Client = new S3Client(new AuthService());
 
-async function getUrl(bucket: string, key: string): Promise<string> {
-    const validForSeconds = 5 * 60 * 60;
-    return await s3Client.getSignedUrl('getObject', bucket, key, validForSeconds);
+async function getUrl(bucket: string, key: string): Promise<SignedUrl> {
+    return await s3Client.getSignedUrl('getObject', bucket, key);
 }
 
 export interface S3Folder {
     isFolder: boolean;
+    isFile: boolean;
     key: string;
     bucket: string;
     fileName: string;
@@ -18,15 +18,15 @@ export interface S3Folder {
 }
 
 export interface S3Object extends S3Folder {
-    getUrl: () => Promise<string>;
+    getUrl: () => Promise<SignedUrl>;
 }
 
 function getParent(object: S3Folder): S3Folder {
     let path = object.key;
     if (path.endsWith('/')) {
-        path = path.substr(0, path.length - 1);
+        path = path.substring(0, path.length - 1);
     }
-    const parentPath = path.substr(0, path.lastIndexOf('/') + 1);
+    const parentPath = path.substring(0, path.lastIndexOf('/') + 1);
     return new S3FolderObject(object.bucket, parentPath);
 }
 
@@ -50,11 +50,11 @@ class S3FileObject implements S3Object {
         this.key = key;
     }
 
-    async getUrl() {
+    async getUrl() : Promise<SignedUrl>{
         if (this.isFolder) {
             throw new Error(`Cannot get url for folder ${this.key}`);
         }
-        return getUrl(this.bucket, this.key);
+        return await getUrl(this.bucket, this.key);
     }
 
     getParentFolder(): S3Folder {
@@ -63,6 +63,10 @@ class S3FileObject implements S3Object {
 
     get isFolder() {
         return this.key.endsWith('/');
+    }
+
+    get isFile() {
+        return !this.isFolder;
     }
 
     get fileName() {
@@ -79,7 +83,7 @@ class S3FolderObject implements S3Object {
         this.key = prefix;
     }
 
-    async getUrl(): Promise<string> {
+    async getUrl(): Promise<SignedUrl> {
         throw new Error(`Cannot get url for folder ${this.key}`);
     }
 
@@ -91,6 +95,10 @@ class S3FolderObject implements S3Object {
         return true;
     }
 
+    get isFile() {
+        return false;
+    }
+
     get fileName() {
         return getFileName(this.key);
     }
@@ -100,7 +108,7 @@ export class S3Service {
     async listBuckets(): Promise<string[]> {
         const response = await s3Client.listBuckets();
         const buckets: Bucket[] = response.Buckets || [];
-        return buckets.map(b => b.Name || "(unknown bucket)");
+        return buckets.map(b => b.Name ?? "(unknown bucket)");
     }
 
     async listMedia(bucket: string, prefix: string): Promise<S3Object[]> {
@@ -124,7 +132,7 @@ export class S3Service {
     }
 
     convertObject(bucket: string, object: S3.Object): S3Object {
-        const file = new S3FileObject(bucket, object.Key || '(no key)');
+        const file = new S3FileObject(bucket, object.Key ?? '(no key)');
         if (file.key.endsWith('/')) {
             return new S3FolderObject(bucket, file.key);
         }
@@ -132,6 +140,6 @@ export class S3Service {
     }
 
     convertCommonPrefix(bucket: string, prefix: S3.CommonPrefix): S3Object {
-        return new S3FolderObject(bucket, prefix.Prefix || '(unknown prefix)');
+        return new S3FolderObject(bucket, prefix.Prefix ?? '(unknown prefix)');
     }
 }

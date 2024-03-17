@@ -54,7 +54,7 @@ const MediaList: React.FC<{ bucket: string, path: string, time?: number }> = ({ 
     const { playerControl } = useMusicPlayer();
 
     const isFolder = path === '' || path.indexOf('/') < 0 || path.endsWith('/');
-    const folderPath = isFolder ? path : path.substr(0, path.lastIndexOf('/') + 1);
+    const folderPath = isFolder ? path : path.substring(0, path.lastIndexOf('/') + 1);
     const currentFolder = s3.getFolder(bucket, folderPath);
 
     useEffect(() => {
