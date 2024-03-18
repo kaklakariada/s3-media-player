@@ -7,6 +7,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "jest": "jest",
     "cloudfront-deploy": "node deploy/deploy.js",
     "deploy": "npm-run-all build cloudfront-deploy"
   },
