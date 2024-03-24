@@ -73,6 +73,7 @@ const PlayerControls: React.FC = () => {
 
     useEffect(() => {
         updateUrl(currentTrack);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentTrack]);
 
     function skip(skipSeconds: number) {
