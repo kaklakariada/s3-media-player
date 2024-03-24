@@ -8,11 +8,20 @@ interface State {
 }
 
 export class SignedUrl {
-    constructor(public url: string, private operation: string, private bucket: string, private key: string,
+    constructor(public url: string, private operation: string, private bucket: string, public key: string,
         private expiration: Date, private s3Client: S3Client) { }
 
     get remainingValidTimeMillis(): number {
         return this.expiration.getTime() - Date.now();
+    }
+
+    whenExpired(consumer: (url: SignedUrl) => void) {
+        const expirationMillis = this.expiration.getTime() - Date.now();
+        console.log(`Renewing signed url in ${expirationMillis / 1000 / 60} minutes`);
+        setTimeout(async () => {
+            const newUrl = await this.s3Client.getSignedUrl(this.operation, this.bucket, this.key);
+            consumer(newUrl);
+        }, expirationMillis);
     }
 }
 
@@ -26,6 +35,7 @@ export class S3Client {
     async getSignedUrl(operation: string, bucket: string, key: string): Promise<SignedUrl> {
         const state = await this.getState();
         const validForSeconds = state.credentials.remainingValidTimeMillis / 1000
+        //const validForSeconds = 10
         const expiration = new Date(Date.now() + validForSeconds * 1000);
         const params: any = {
             Bucket: bucket,
