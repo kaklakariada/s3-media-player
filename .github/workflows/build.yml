@@ -12,6 +12,8 @@ jobs:
     defaults:
       run:
         shell: "bash"
+    permissions:
+      contents: read
 
     steps:
     - uses: actions/checkout@v4
@@ -42,6 +44,8 @@ jobs:
       run: cd infrastructure && npm ci
     - name: Build infrastructure
       run: cd infrastructure && npm run cdk synth
+    - name: Test infrastructure
+      run: cd infrastructure && npm run test
 
     - name: Configure frontend
       run: |
@@ -62,3 +66,7 @@ jobs:
 
     - name: Build frontend
       run: cd frontend && npm run build
+
+    - name: Test frontend
+      if: ${{ false }}
+      run: cd frontend && npm run test

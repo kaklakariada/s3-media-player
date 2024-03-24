@@ -13,6 +13,7 @@ import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import IconButton from "@mui/material/IconButton/IconButton";
 import { styled } from "@mui/system";
 import { PlaylistItem } from "../services/PlaylistService";
+import { SignedUrl } from "../services/AuthenticatedS3Client";
 
 
 const CurrentTrackLink: React.FC<{}> = () => {
@@ -47,18 +48,32 @@ const PlayerControls: React.FC = () => {
     });
 
     async function updateUrl(track: PlaylistItem | undefined) {
-        if (track && !track.track.isFolder) {
+        if (track && track.track.isFile) {
             const trackUrl = await track.track.getUrl();
-            console.log(`Current track has changed to ${track.track.fileName}. Playing URL...`);
-            setUrl(trackUrl);
+            startPlayingUrl(trackUrl);
         } else {
             console.log("Invalid item, skip updating url", track);
             setUrl(undefined);
         }
     }
 
+    function startPlayingUrl(signedUrl: SignedUrl) {
+        console.log(`Current track has changed to ${signedUrl.key}. Playing URL...`);
+        setUrl(signedUrl.url);
+        signedUrl.whenExpired((newUrl) => {
+            if (currentTrack?.track.key !== newUrl.key) {
+                console.log(`URL expired, but track has changed. Skip updating url.`);
+                return;
+            }
+            console.log(`URL expired, updating url for track ${newUrl.key}`);
+            // also set current playing time to avoid starting from the beginning
+            //startPlayingUrl(newUrl)
+        });
+    }
+
     useEffect(() => {
         updateUrl(currentTrack);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentTrack]);
 
     function skip(skipSeconds: number) {
