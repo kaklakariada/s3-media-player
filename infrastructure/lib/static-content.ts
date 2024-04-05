@@ -1,6 +1,6 @@
 import { CfnOutput, RemovalPolicy } from 'aws-cdk-lib';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
-import { CloudFrontWebDistribution, OriginAccessIdentity, PriceClass, SecurityPolicyProtocol, SSLMethod, ViewerCertificate, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
+import { CloudFrontWebDistribution, HttpVersion, OriginAccessIdentity, PriceClass, SecurityPolicyProtocol, SSLMethod, ViewerCertificate, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { CfnRecordSetGroup } from 'aws-cdk-lib/aws-route53';
 import { BlockPublicAccess, Bucket, BucketPolicy } from 'aws-cdk-lib/aws-s3';
@@ -20,7 +20,8 @@ export class StaticContentConstruct extends Construct {
 
     const staticContentBucket = new Bucket(this, "Bucket", {
       removalPolicy: RemovalPolicy.DESTROY,
-      blockPublicAccess: BlockPublicAccess.BLOCK_ALL
+      blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+      websiteIndexDocument: "index.html"
     });
 
     const certificate = Certificate.fromCertificateArn(this, "Certificate", props.sslCertificateArn);
@@ -30,6 +31,7 @@ export class StaticContentConstruct extends Construct {
     });
 
     const cloudfrontDistribution = new CloudFrontWebDistribution(this, "CloudFrontDistribution", {
+      enabled: true,
       comment: `${props.domain}`,
       originConfigs: [{
         behaviors: [{ isDefaultBehavior: true }],
@@ -41,12 +43,13 @@ export class StaticContentConstruct extends Construct {
       defaultRootObject: "index.html",
       enableIpV6: true,
       viewerCertificate: ViewerCertificate.fromAcmCertificate(certificate, {
-        securityPolicy: SecurityPolicyProtocol.TLS_V1_2_2018,
+        securityPolicy: SecurityPolicyProtocol.TLS_V1_2_2021,
         sslMethod: SSLMethod.SNI,
         aliases: [props.domain]
       }),
       priceClass: PriceClass.PRICE_CLASS_100,
-      viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
+      viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      httpVersion: HttpVersion.HTTP2_AND_3,
     });
 
     const bucketPolicy = new BucketPolicy(this, "AllowReadAccessToCloudFront", { bucket: staticContentBucket });

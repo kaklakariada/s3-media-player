@@ -19,9 +19,13 @@ export class CognitoAuthConstruct extends Construct {
     super(scope, id);
     const userPool = new CfnUserPool(this, "UserPool", {
       userPoolName: "S3MediaPlayerUserPool-" + id,
+      deletionProtection: "INACTIVE",
+      userPoolAddOns: {
+        advancedSecurityMode: "ENFORCED"
+      },
       adminCreateUserConfig: {
         allowAdminCreateUserOnly: true,
-        unusedAccountValidityDays: 30,
+        unusedAccountValidityDays: 7,
         inviteMessageTemplate: {
           emailSubject: `S3 Media Player ${props.domain} - Invitation`,
           emailMessage: `Hi {username}!
@@ -42,9 +46,10 @@ If you have any questions, please contact ${props.contactEmailAddress}`
       },
       emailVerificationSubject: `S3 Media Player ${props.domain} - Email verification`,
       emailVerificationMessage: `Hi!
-To verify your email address at ${props.domain} please enter this code: {####}.
-If you have any questions, please contact ${props.contactEmailAddress}`,
+      To verify your email address at ${props.domain} please enter this code: {####}.
+      If you have any questions, please contact ${props.contactEmailAddress}`,
       mfaConfiguration: "OFF",
+      enabledMfas: [],
       policies: {
         passwordPolicy: {
           minimumLength: 6,
@@ -58,8 +63,21 @@ If you have any questions, please contact ${props.contactEmailAddress}`,
 
     const webClient = new CfnUserPoolClient(this, "Client", {
       generateSecret: false,
+      userPoolId: userPool.ref,
+      allowedOAuthFlowsUserPoolClient: false,
       refreshTokenValidity: 30, // days
-      userPoolId: userPool.ref
+      accessTokenValidity: 2, // hours
+      idTokenValidity: 2, // hours
+      tokenValidityUnits: {
+        refreshToken: "days",
+        accessToken: "hours",
+        idToken: "hours"
+      },
+      preventUserExistenceErrors: "ENABLED",
+      supportedIdentityProviders: ["COGNITO"],
+      authSessionValidity: 15, // minutes
+      readAttributes: ["preferred_username"],
+      writeAttributes: []
     });
 
     const identityPool = new CfnIdentityPool(this, "IdentityPool", {
@@ -72,7 +90,7 @@ If you have any questions, please contact ${props.contactEmailAddress}`,
     });
 
     this.userRole = new Role(this, "UserRole", {
-      maxSessionDuration: Duration.hours(1),
+      maxSessionDuration: Duration.hours(3),
       assumedBy: new FederatedPrincipal("cognito-identity.amazonaws.com", {
         "StringEquals": { "cognito-identity.amazonaws.com:aud": identityPool.ref },
         "ForAnyValue:StringLike": { "cognito-identity.amazonaws.com:amr": "authenticated" }
@@ -83,7 +101,8 @@ If you have any questions, please contact ${props.contactEmailAddress}`,
       groupName: "Users",
       description: "Group for users",
       roleArn: this.userRole.roleArn,
-      userPoolId: userPool.ref
+      userPoolId: userPool.ref,
+      precedence: 10
     });
 
     new CfnIdentityPoolRoleAttachment(this, "RoleAttachment", {
