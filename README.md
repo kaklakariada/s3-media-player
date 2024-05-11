@@ -10,8 +10,8 @@ S3 Media Player uses the following technologies:
 * Authentication and Authorization: Cognito
 * Static web content: Cloudfront and S3
 * Frontend: React and AWS Amplify
-* Storage: S3
-* Deployment: Cloudformation / CDK
+* Media Storage: S3
+* Deployment: CloudFormation / CDK
 
 ## Deployment to AWS
 
@@ -27,7 +27,7 @@ To deploy this in your AWS account you will need the following:
 
 On your local machine you will need the following:
 
-* [Node.js](https://nodejs.org/en/) 12.x
+* [Node.js](https://nodejs.org/en/) 22.x
 * [AWS Command line interface](https://aws.amazon.com/cli/)
 * Configure AWS credentials for the AWS CLI by calling `aws configure`
 
@@ -67,7 +67,7 @@ Add the following CORS configuration to `my-media-bucket`:
 
 You can do this by executing the following command:
 
-```bash
+```sh
 aws s3api put-bucket-cors --bucket my-media-bucket --cors-configuration '{
   "CORSRules": [
     {
@@ -82,7 +82,7 @@ aws s3api put-bucket-cors --bucket my-media-bucket --cors-configuration '{
 
 ### Deploy infrastructure
 
-```bash
+```sh
 cd infrastructure
 npm run cdk deploy
 ```
@@ -116,7 +116,7 @@ exports.CONFIG = {
 
 ### Deploy frontend
 
-```bash
+```sh
 cd frontend
 npm run deploy
 ```
@@ -133,27 +133,27 @@ Go to the AWS Cognito console and create users for your new web app. Don't forge
 
 Run local frontend during development:
 
-```bash
+```sh
 cd frontend
 npm start
 ```
 
 ### Upgrade dependencies in `package.json`
 
-```bash
+```sh
 npx npm-check-updates -u && npm install
 ```
 
 ### Managing configuration in a private branch
 
-This project requires some configuration files with deployment specific information, e.g. domain names that should not be stored in a public git repository. That's why these files are added to `.gitignore`. If you want to still keep your configuration under version control you can do so in a private branch (e.g. `private-master`) that you could push to a private repository only.
+This project requires some configuration files with deployment specific information, e.g. domain names that should not be stored in a public git repository. That's why these files are added to `.gitignore`. If you want to still keep your configuration under version control you can do so in a private branch (e.g. `private-main`) that you could push to a private repository only.
 
-When switching from `private-master` to the public `main` branch, git will delete the configuration files. To restore them you can use the following command:
+When switching from `private-main` to the public `main` branch, git will delete the configuration files. To restore them you can use the following command:
 
-```bash
-git show private-master:frontend/deploy/deploy-config.js > frontend/deploy/deploy-config.js \
-  && git show private-master:frontend/src/frontend-config.ts > frontend/src/frontend-config.ts \
-  && git show private-master:infrastructure/infrastructure-config.ts > infrastructure/infrastructure-config.ts
+```sh
+git show private-main:frontend/deploy/deploy-config.js > frontend/deploy/deploy-config.js \
+  && git show private-main:frontend/src/frontend-config.ts > frontend/src/frontend-config.ts \
+  && git show private-main:infrastructure/infrastructure-config.ts > infrastructure/infrastructure-config.ts
 ```
 
 ### Troubleshooting
