@@ -1,6 +1,6 @@
 import S3, { ListObjectsV2Request } from "aws-sdk/clients/s3";
-import { AuthService, RenewableCredentials } from "./AuthService";
 import environment from '../environment';
+import { AuthService, RenewableCredentials } from "./AuthService";
 
 interface State {
     s3: S3;
@@ -45,10 +45,6 @@ export class S3Client {
         console.log(`Getting signed url for ${operation} ${bucket}/${key} valid for ${validForSeconds} seconds`);
         const url = await state.s3.getSignedUrlPromise(operation, params);
         return new SignedUrl(url, operation, bucket, key, expiration, this);
-    }
-
-    async listBuckets() {
-        return (await this.getS3()).listBuckets().promise();
     }
 
     async listObjectsV2(params: ListObjectsV2Request) {

@@ -1,4 +1,4 @@
-import S3, { Bucket, ListObjectsV2Request } from 'aws-sdk/clients/s3';
+import S3, { ListObjectsV2Request } from 'aws-sdk/clients/s3';
 import { AuthService } from './AuthService';
 import { S3Client, SignedUrl } from './AuthenticatedS3Client';
 
@@ -105,12 +105,6 @@ class S3FolderObject implements S3Object {
 }
 
 export class S3Service {
-    async listBuckets(): Promise<string[]> {
-        const response = await s3Client.listBuckets();
-        const buckets: Bucket[] = response.Buckets || [];
-        return buckets.map(b => b.Name ?? "(unknown bucket)");
-    }
-
     async listMedia(bucket: string, prefix: string): Promise<S3Object[]> {
         const params: ListObjectsV2Request = {
             Bucket: bucket,
