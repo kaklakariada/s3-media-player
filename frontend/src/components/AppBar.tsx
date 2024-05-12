@@ -1,3 +1,4 @@
+import { AuthUser } from "@aws-amplify/auth";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import MenuIcon from "@mui/icons-material/Menu";
 import MuiAppBar from "@mui/material/AppBar";
@@ -9,10 +10,7 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import { styled } from '@mui/system';
 import React, { useEffect, useState } from "react";
-import { AuthService } from "../services/AuthService";
-import { AuthUser } from "@aws-amplify/auth";
-
-const authService = new AuthService();
+import { AUTH_SERVICE } from "../services/AuthService";
 
 const AppBar: React.FC<unknown> = () => {
 
@@ -23,7 +21,7 @@ const AppBar: React.FC<unknown> = () => {
   useEffect(() => {
     (async function () {
       try {
-        const currentUser = await authService.currentAuthenticatedUser();
+        const currentUser = await AUTH_SERVICE.currentAuthenticatedUser();
         setUser(currentUser);
       } catch (error) {
         console.warn("Error getting current user", error);
@@ -37,7 +35,7 @@ const AppBar: React.FC<unknown> = () => {
 
   const handleLogout = () => {
     handleClose();
-    authService.signOut();
+    AUTH_SERVICE.signOut();
   };
 
   const handleClose = () => {

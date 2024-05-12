@@ -56,14 +56,6 @@ export class S3Client {
         return (await this.getS3()).listObjectsV2(params).promise();
     }
 
-    private async createState(credentials: RenewableCredentials): Promise<State> {
-        const s3Config: S3.Types.ClientConfiguration = {
-            region: environment.region,
-            credentials: credentials.credentials
-        };
-        return { s3: new S3(s3Config), credentials };
-    }
-
     private async getState(): Promise<State> {
         if (!this.state) {
             const credentials = await this.authService.getRenewableCredentials();
@@ -74,6 +66,14 @@ export class S3Client {
             })
         }
         return this.state;
+    }
+
+    private async createState(credentials: RenewableCredentials): Promise<State> {
+        const s3Config: S3.Types.ClientConfiguration = {
+            region: environment.region,
+            credentials: credentials.credentials
+        };
+        return { s3: new S3(s3Config), credentials };
     }
 
     private async getS3(): Promise<S3> {

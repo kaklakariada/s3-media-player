@@ -1,8 +1,8 @@
 import { S3 } from 'aws-sdk';
-import { AuthService } from './AuthService';
+import { AUTH_SERVICE } from './AuthService';
 import { S3Client, SignedUrl } from './AuthenticatedS3Client';
 
-const s3Client = new S3Client(new AuthService());
+const s3Client = new S3Client(AUTH_SERVICE);
 
 async function getUrl(bucket: string, key: string): Promise<SignedUrl> {
     return await s3Client.getSignedUrl('getObject', bucket, key);
