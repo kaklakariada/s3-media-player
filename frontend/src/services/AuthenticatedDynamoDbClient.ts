@@ -1,5 +1,5 @@
-import { DynamoDBClient, DynamoDBClientConfig, ScanCommand, Select } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, ScanCommandOutput } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBClient, DynamoDBClientConfig, ScanCommandOutput, Select } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocument, DynamoDBDocumentClient, PutCommandInput, ScanCommandInput } from "@aws-sdk/lib-dynamodb";
 import environment from "../environment";
 import { AuthService, RenewableCredentials } from "./AuthService";
 
@@ -7,6 +7,7 @@ import { AuthService, RenewableCredentials } from "./AuthService";
 interface State {
     client: DynamoDBClient;
     docClient: DynamoDBDocumentClient;
+    doc: DynamoDBDocument;
     credentials: RenewableCredentials;
 }
 
@@ -15,6 +16,7 @@ export interface RawDynamoDbResult {
 }
 
 export class AuthDynamoDbClient {
+
     private state: State | undefined;
 
     constructor(private authService: AuthService) {
@@ -22,19 +24,28 @@ export class AuthDynamoDbClient {
     }
 
     async query(prefix: string): Promise<Record<string, any>[]> {
-        const command = new ScanCommand({
+        const doc = (await this.getState()).doc;
+        const command: ScanCommandInput = {
             ProjectionExpression: undefined,
-            ExpressionAttributeNames: { "#path": "path" },
-            ExpressionAttributeValues: { ":v0": { "S": prefix } },
-            FilterExpression: "begins_with(#path, :v0)",
+            ExpressionAttributeNames: { "#key": "key" },
+            ExpressionAttributeValues: { ":v0": prefix },
+            FilterExpression: "begins_with(#key, :v0)",
             Limit: 100,
             Select: Select.ALL_ATTRIBUTES,
             TableName: environment.metadataTableName,
-        });
-        const response: ScanCommandOutput = await (await this.getState()).docClient.send(command);
+        };
+        const response: ScanCommandOutput = await doc.scan(command);
         console.log(`Query for ${prefix} returned ${response.Count} items, ${response.ScannedCount} scanned, last evaluated key: ${response.LastEvaluatedKey}`);
         return response.Items ? response.Items : [];
     }
+
+    async insert(item: Record<string, any>) {
+        const args: PutCommandInput = { TableName: environment.metadataTableName, Item: item };
+        const doc = (await this.getState()).doc;
+        const result = await doc.put(args);
+        console.log("Put result", result);
+    }
+
 
     private async getClient(): Promise<DynamoDBClient> {
         return (await this.getState()).client;
@@ -59,7 +70,7 @@ export class AuthDynamoDbClient {
         };
         const client = new DynamoDBClient(config);
         const docClient = DynamoDBDocumentClient.from(client);
-
-        return { client, docClient, credentials };
+        const doc = DynamoDBDocument.from(client);
+        return { client, docClient, doc, credentials };
     }
 }

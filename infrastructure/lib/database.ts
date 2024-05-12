@@ -8,12 +8,12 @@ interface DatabaseProps {
 
 
 export class DatabaseConstruct extends Construct {
-    private readonly favoritesTable: Table;
+    private readonly metadataTable: Table;
     constructor(scope: Construct, id: string, _props: DatabaseProps) {
         super(scope, id);
-        this.favoritesTable = new Table(this, 'Favorites', {
+        this.metadataTable = new Table(this, 'Metadata', {
             partitionKey: {
-                name: 'path',
+                name: 'key',
                 type: AttributeType.STRING
             },
             billingMode: BillingMode.PAY_PER_REQUEST,
@@ -24,13 +24,13 @@ export class DatabaseConstruct extends Construct {
             encryption: TableEncryption.DEFAULT,
         });
 
-        new CfnOutput(this, "FavoritesTableName", {
-            description: "Favorites DynamoDb Table Name",
+        new CfnOutput(this, "MetadataTableName", {
+            description: "Media Metadata DynamoDb Table Name",
             value: this.table.tableName
         });
     }
 
     get table() {
-        return this.favoritesTable;
+        return this.metadataTable;
     }
 }

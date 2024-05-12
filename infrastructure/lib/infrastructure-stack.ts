@@ -32,7 +32,7 @@ export class InfrastructureStack extends Stack {
     });
 
     auth.getUserRole().addToPolicy(new PolicyStatement({
-      actions: ["dynamodb:Scan"], resources: [db.table.tableArn]
+      actions: ["dynamodb:Scan", "dynamodb:PutItem"], resources: [db.table.tableArn]
     }));
 
     const mediaBucket = Bucket.fromBucketName(this, 'MediaBucket', props.mediaBucket);

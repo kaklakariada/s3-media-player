@@ -15,16 +15,17 @@ export interface MetadataItem {
 }
 
 export class MetadataService {
+    async insert(value: MetadataItem) {
+        await dynamoDbClient.insert(value);
+    }
     async getMetadata(prefix: string): Promise<FolderMetadata> {
         const items = await dynamoDbClient.query(prefix);
+        console.log("Raw metadata", items);
         return { path: prefix, items: items.map(convertItem) };
     }
 }
 
 function convertItem(item: Record<string, any>): MetadataItem {
-    return {
-        key: item['path'].S,
-        note: item['note'].S
-    };
+    return item as MetadataItem;
 }
 
