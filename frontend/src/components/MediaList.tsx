@@ -1,21 +1,21 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import Container from "@mui/material/Container";
-import CircularProgress from "@mui/material/CircularProgress";
-import { S3Service, S3Object } from "../services/S3Service";
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import FolderIcon from '@mui/icons-material/Folder';
 import AudiotrackIcon from '@mui/icons-material/Audiotrack';
+import FolderIcon from '@mui/icons-material/Folder';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn';
-import useMusicPlayer from "../hooks/useMusicPlayer";
-import { Playlist, PlaylistItem, PlaylistService } from "../services/PlaylistService";
 import { ListItemButton, Typography } from "@mui/material";
+import CircularProgress from "@mui/material/CircularProgress";
+import Container from "@mui/material/Container";
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import useMusicPlayer from "../hooks/useMusicPlayer";
+import { MediaService, S3Object } from "../services/MediaService";
+import { Playlist, PlaylistItem, PlaylistService } from "../services/PlaylistService";
 
-const s3 = new S3Service();
+const s3 = new MediaService();
 const playlistService = new PlaylistService();
 
 const FolderListItem: React.FC<{ folder: S3Object }> = ({ folder }) => {
@@ -39,7 +39,8 @@ const OtherFileItem: React.FC<{ file: PlaylistItem }> = ({ file }) => {
 const AudioFileItem: React.FC<{ file: PlaylistItem }> = ({ file }) => {
     const { currentTrack, isPlaying } = useMusicPlayer();
     const isCurrentTrack = file.equals(currentTrack);
-    const state = isCurrentTrack ? (isPlaying ? 'playing' : 'paused') : '';
+    const playingState = isPlaying ? 'playing' : 'paused';
+    const state = isCurrentTrack ? playingState : '';
     return (<ListItemButton component={Link} to={`/${file.track.key}`}>
         <ListItemIcon>
             <AudiotrackIcon />

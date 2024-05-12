@@ -47,7 +47,12 @@ export class S3Client {
         return new SignedUrl(url, operation, bucket, key, expiration, this);
     }
 
-    async listObjectsV2(params: ListObjectsV2Request) {
+    async listObjects(bucket: string, prefix: string) {
+        const params: ListObjectsV2Request = {
+            Bucket: bucket,
+            Delimiter: '/',
+            Prefix: prefix
+        };
         return (await this.getS3()).listObjectsV2(params).promise();
     }
 

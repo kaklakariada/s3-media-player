@@ -1,4 +1,4 @@
-import { S3Object } from "./S3Service";
+import { S3Object } from "./MediaService";
 
 export interface Playlist {
     readonly items: PlaylistItem[]
