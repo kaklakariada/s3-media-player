@@ -57,7 +57,8 @@ jobs:
             cognitoIdentityPoolId: "eu-west-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
             cognitoUserPoolId: "eu-west-1_xxxxxxxxx",
             cognitoUserPoolWebClientId: "xxxxxxxxxxxxxxxxxxxxxxxxxx",
-            mediaBucket: "my-media-bucket"
+            mediaBucket: "my-media-bucket",
+            metadataTableName: "my-metadata-table"
         };
         EOF
 

@@ -1,8 +1,8 @@
-import S3, { Bucket, ListObjectsV2Request } from 'aws-sdk/clients/s3';
-import { AuthService } from './AuthService';
+import { S3 } from 'aws-sdk';
+import { AUTH_SERVICE } from './AuthService';
 import { S3Client, SignedUrl } from './AuthenticatedS3Client';
 
-const s3Client = new S3Client(new AuthService());
+const s3Client = new S3Client(AUTH_SERVICE);
 
 async function getUrl(bucket: string, key: string): Promise<SignedUrl> {
     return await s3Client.getSignedUrl('getObject', bucket, key);
@@ -104,27 +104,12 @@ class S3FolderObject implements S3Object {
     }
 }
 
-export class S3Service {
-    async listBuckets(): Promise<string[]> {
-        const response = await s3Client.listBuckets();
-        const buckets: Bucket[] = response.Buckets || [];
-        return buckets.map(b => b.Name ?? "(unknown bucket)");
-    }
-
+export class MediaService {
     async listMedia(bucket: string, prefix: string): Promise<S3Object[]> {
-        const params: ListObjectsV2Request = {
-            Bucket: bucket,
-            Delimiter: '/',
-            Prefix: prefix
-        };
-        const response = await s3Client.listObjectsV2(params);
+        const response = await s3Client.listObjects(bucket, prefix);
         const folders: S3Object[] = response.CommonPrefixes?.map(prefix => this.convertCommonPrefix(bucket, prefix)) || [];
         const objects: S3Object[] = response.Contents?.map(object => this.convertObject(bucket, object)) || [];
         return folders.concat(objects).filter(o => o.key !== prefix);
-    }
-
-    async getObject(bucket: string, key: string): Promise<S3Object> {
-        return new S3FileObject(bucket, key);
     }
 
     getFolder(bucket: string, prefix: string): S3Folder {
