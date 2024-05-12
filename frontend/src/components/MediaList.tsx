@@ -52,16 +52,21 @@ const MediaList: React.FC<{ bucket: string, path: string, time?: number }> = ({ 
                 console.log("Metadata already loaded for ", folderPath);
                 return;
             }
-            try {
-                const metadata = await metadataService.getMetadata(folderPath);
-                console.log("Metadata", metadata);
-                setFolderMetadata(metadata);
-            } catch (e) {
-                console.error("Error getting metadata", e);
-                setMetadataError(e)
-            }
+            await updateMetadata();
         })();
     }, [folderMetadata, folderPath]);
+
+    async function updateMetadata() {
+        console.log("Getting metadata for ", folderPath);
+        try {
+            const metadata = await metadataService.getMetadata(folderPath);
+            console.log("Metadata", metadata);
+            setFolderMetadata(metadata);
+        } catch (e) {
+            console.error("Error getting metadata", e);
+            setMetadataError(e)
+        }
+    }
 
     useEffect(() => {
         if(!playlist) {
@@ -92,13 +97,15 @@ const MediaList: React.FC<{ bucket: string, path: string, time?: number }> = ({ 
         return folderMetadata.items.find(item => item.key === key);
     }
 
+
+
     function renderItem(object: PlaylistItem) {
         if (object.track.isFolder) {
             return <FolderListItem key={object.track.key} folder={object.track} />;
         }
         const metadata = getMetadata(object.track.key);
         if (isAudioFile(object.track)) {
-            return <AudioFileItem key={object.track.key} file={object} metadata={metadata} />
+            return <AudioFileItem key={object.track.key} file={object} metadata={metadata} metadataChangeCallback={updateMetadata} />
         }
         return <OtherFileItem key={object.track.key} file={object} metadata={metadata} />
     }

@@ -6,12 +6,14 @@ import { PlaylistItem } from '../services/PlaylistService';
 
 const metadataService = new MetadataService();
 
+export type MetadataChangeCallback = (metadata: MetadataItem) => void;
+
 export const MetadataView: React.FC<{ metadata?: MetadataItem }> = ({ metadata }) => {
     const view = metadata ? metadata.note : '';
     return (<ListItemText primary={view} />);
 }
 
-export const EditMetadataButton: React.FC<{ file: PlaylistItem, metadata?: MetadataItem }> = ({ file, metadata }) => {
+export const EditMetadataButton: React.FC<{ file: PlaylistItem, metadata?: MetadataItem, changeCallback: MetadataChangeCallback }> = ({ file, metadata, changeCallback }) => {
     const [dialogOpen, setDialogOpen] = useState(false);
     function editMetadata() {
         setDialogOpen(true);
@@ -23,26 +25,19 @@ export const EditMetadataButton: React.FC<{ file: PlaylistItem, metadata?: Metad
         <IconButton edge="start" aria-label="metadata" onClick={editMetadata}>
             <EditIcon />
         </IconButton>
-        <EditMetadataDialog open={dialogOpen} handleClose={handleClose} file={file} metadata={metadata} />
+        <EditMetadataDialog open={dialogOpen} handleClose={handleClose} file={file} metadata={metadata} changeCallback={changeCallback} />
     </>;
 }
 
-const EditMetadataDialog: React.FC<{ open: boolean, handleClose: () => void, file: PlaylistItem, metadata?: MetadataItem }> = ({ open, handleClose, file, metadata }) => {
+const EditMetadataDialog: React.FC<{ open: boolean, handleClose: () => void, file: PlaylistItem, metadata?: MetadataItem, changeCallback: MetadataChangeCallback }> = ({ open, handleClose, file, metadata, changeCallback }) => {
     async function saveMetadata(formData: any) {
         console.log("Save metadata", formData, file);
-        if (!metadata) {
-            const newMetadata: MetadataItem = {
+        const newMetadata: MetadataItem = {
                 key: file.track.key,
                 note: formData.note
-            };
-            await metadataService.insert(newMetadata);
-        } else {
-            const newMetadata: MetadataItem = {
-                key: metadata.key,
-                note: formData.note
-            };
-            await metadataService.insert(newMetadata);
-        }
+        };
+        await metadataService.insert(newMetadata);
+        changeCallback(newMetadata);
     }
     return (
         <Dialog

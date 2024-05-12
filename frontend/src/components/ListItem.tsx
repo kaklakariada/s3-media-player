@@ -11,7 +11,7 @@ import useMusicPlayer from "../hooks/useMusicPlayer";
 import { S3Object } from "../services/MediaService";
 import { MetadataItem } from '../services/MetadataService';
 import { PlaylistItem } from "../services/PlaylistService";
-import { EditMetadataButton, MetadataView } from './MetadataView';
+import { EditMetadataButton, MetadataChangeCallback, MetadataView } from './MetadataView';
 
 export const FolderListItem: React.FC<{ folder: S3Object }> = ({ folder }) => {
     return (<ListItemButton component={Link} to={`/${folder.key}`}>
@@ -32,14 +32,14 @@ export const OtherFileItem: React.FC<{ file: PlaylistItem, metadata?: MetadataIt
     </ListItem>);
 }
 
-export const AudioFileItem: React.FC<{ file: PlaylistItem, metadata?: MetadataItem }> = ({ file, metadata }) => {
+export const AudioFileItem: React.FC<{ file: PlaylistItem, metadata?: MetadataItem, metadataChangeCallback: MetadataChangeCallback }> = ({ file, metadata, metadataChangeCallback }) => {
     const { currentTrack, isPlaying } = useMusicPlayer();
     const isCurrentTrack = file.equals(currentTrack);
     const playingState = isPlaying ? 'playing' : 'paused';
     const state = isCurrentTrack ? playingState : '';
     return (
         <ListItem key={file.track.fileName} disablePadding={false} secondaryAction={
-            <EditMetadataButton file={file} metadata={metadata} />}>
+            <EditMetadataButton file={file} metadata={metadata} changeCallback={metadataChangeCallback} />}>
             <ListItemButton component={Link} to={`/${file.track.key}`}>
                 <ListItemIcon>
                     <AudiotrackIcon />
