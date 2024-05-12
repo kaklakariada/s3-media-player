@@ -1,12 +1,8 @@
-import AudiotrackIcon from '@mui/icons-material/Audiotrack';
-import FolderIcon from '@mui/icons-material/Folder';
-import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn';
 import { ListItemButton, Typography } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import Container from "@mui/material/Container";
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import React, { useEffect, useState } from "react";
@@ -15,44 +11,12 @@ import useMusicPlayer from "../hooks/useMusicPlayer";
 import { MediaService, S3Object } from "../services/MediaService";
 import { FolderMetadata, MetadataItem, MetadataService } from '../services/MetadataService';
 import { Playlist, PlaylistItem, PlaylistService } from "../services/PlaylistService";
+import { AudioFileItem, FolderListItem, OtherFileItem } from './ListItem';
 
 const s3 = new MediaService();
 const metadataService = new MetadataService();
 const playlistService = new PlaylistService();
 
-const FolderListItem: React.FC<{ folder: S3Object }> = ({ folder }) => {
-    return (<ListItemButton component={Link} to={`/${folder.key}`}>
-        <ListItemIcon>
-            <FolderIcon />
-        </ListItemIcon>
-        <ListItemText primary={folder.fileName} />
-    </ListItemButton>);
-}
-
-const OtherFileItem: React.FC<{ file: PlaylistItem, metadata?: MetadataItem }> = ({ file, metadata }) => {
-    return (<ListItem>
-        <ListItemIcon>
-            <InsertDriveFileIcon />
-        </ListItemIcon>
-        <ListItemText primary={file.track.fileName} />
-    </ListItem>);
-}
-
-const AudioFileItem: React.FC<{ file: PlaylistItem, metadata?: MetadataItem }> = ({ file, metadata }) => {
-    const { currentTrack, isPlaying } = useMusicPlayer();
-    const isCurrentTrack = file.equals(currentTrack);
-    const playingState = isPlaying ? 'playing' : 'paused';
-    const state = isCurrentTrack ? playingState : '';
-    return (<ListItemButton component={Link} to={`/${file.track.key}`}>
-        <ListItemIcon>
-            <AudiotrackIcon />
-        </ListItemIcon>
-        <ListItemText primary={file.track.fileName} secondary={state} />
-        {metadata ?
-            <ListItemText primary={metadata.note} />
-            : <></>}
-    </ListItemButton>);
-}
 
 type GenericError = any;
 
@@ -97,7 +61,7 @@ const MediaList: React.FC<{ bucket: string, path: string, time?: number }> = ({ 
                 setMetadataError(e)
             }
         })();
-    }, [folderPath]);
+    }, [folderMetadata, folderPath]);
 
     useEffect(() => {
         if(!playlist) {
