@@ -153,6 +153,8 @@ When switching from `private-main` to the public `main` branch, git will delete 
 ```sh
 git show private-main:frontend/deploy/deploy-config.js > frontend/deploy/deploy-config.js \
   && git show private-main:frontend/src/frontend-config.ts > frontend/src/frontend-config.ts \
+  && git show private-main:frontend2/deploy/deploy-config.js > frontend2/deploy/deploy-config.js \
+  && git show private-main:frontend2/src/frontend-config.ts > frontend2/src/frontend-config.ts \
   && git show private-main:infrastructure/infrastructure-config.ts > infrastructure/infrastructure-config.ts
 ```
 
