@@ -25,7 +25,7 @@ npm run cdk -- deploy
 **2. Create `frontend-config.ts`** from the CDK outputs:
 
 ```bash
-cp frontend-config.example.ts frontend-config.ts
+cp frontend-config.example.ts src/frontend-config.ts
 # edit frontend-config.ts and fill in the values
 ```
 
