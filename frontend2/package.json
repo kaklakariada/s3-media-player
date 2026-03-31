@@ -8,13 +8,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.750.0",
-    "@aws-sdk/credential-provider-cognito-identity": "^3.750.0",
-    "@aws-sdk/s3-request-presigner": "^3.750.0",
-    "amazon-cognito-identity-js": "^6.3.12"
+    "@aws-sdk/client-s3": "^3.1020.0",
+    "@aws-sdk/credential-provider-cognito-identity": "^3.972.20",
+    "@aws-sdk/s3-request-presigner": "^3.1020.0",
+    "amazon-cognito-identity-js": "^6.3.16"
   },
   "devDependencies": {
-    "typescript": "^5.7.3",
-    "vite": "^6.2.4"
+    "typescript": "^6.0.2",
+    "vite": "^8.0.3"
   }
 }
