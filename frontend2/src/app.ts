@@ -252,7 +252,7 @@ export class App {
         this.seekBar.addEventListener('touchstart', () => { this.isSeeking = true; });
         this.seekBar.addEventListener('change', () => {
             this.isSeeking = false;
-            this.player.seekToPct(parseFloat(this.seekBar.value) / 100);
+            this.player.seekToPct(Number.parseFloat(this.seekBar.value) / 100);
         });
 
         this.timeEl = el('span', { class: 'time' }, ['0:00 / 0:00']);
@@ -279,7 +279,7 @@ export class App {
         const duration = this.player.duration;
         const current = this.player.currentTime;
 
-        if (isFinite(duration) && duration > 0) {
+        if (Number.isFinite(duration) && duration > 0) {
             this.seekBar.value = String((current / duration) * 100);
         }
         this.timeEl.textContent = `${fmtTime(current)} / ${fmtTime(duration)}`;
