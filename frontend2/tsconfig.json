@@ -10,5 +10,5 @@
     "skipLibCheck": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"]
   },
-  "include": ["src", "frontend-config.example.ts"]
+  "include": ["src"]
 }
