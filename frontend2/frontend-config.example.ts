@@ -1,6 +1,7 @@
-// Copy this file to frontend-config.ts and fill in the values from the CDK deploy output.
-// The shape must match FrontendConfig in ../frontend/src/environment.ts.
-export const CONFIG = {
+// Copy this file to src/frontend-config.ts and fill in the values from the CDK deploy output.
+import { FrontendConfig } from "./environment";
+
+export const CONFIG: FrontendConfig = {
     region: 'eu-central-1',
     cognitoIdentityPoolId: 'eu-central-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
     cognitoUserPoolId: 'eu-central-1_XXXXXXXXX',
