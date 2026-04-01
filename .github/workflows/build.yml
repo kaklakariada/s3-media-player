@@ -69,7 +69,7 @@ jobs:
 
     - name: Configure frontend2
       run: |
-        cat > frontend2/frontend-config.ts << EOF
+        cat > frontend2/src/frontend-config.ts << EOF
         import { FrontendConfig } from "./src/environment";
 
         export const CONFIG: FrontendConfig = {
