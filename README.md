@@ -2,6 +2,8 @@
 Play music stored in an S3 bucket
 
 [![Build](https://github.com/kaklakariada/s3-media-player/workflows/Build/badge.svg)](https://github.com/kaklakariada/s3-media-player/actions?query=workflow%3ABuild)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=kaklakariada_s3-media-player&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=kaklakariada_s3-media-player&organization=kaklakariada-github)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=kaklakariada_s3-media-player&metric=coverage)](https://sonarcloud.io/summary/new_code?id=kaklakariada_s3-media-player&organization=kaklakariada-github)
 
 ## Architecture
 
