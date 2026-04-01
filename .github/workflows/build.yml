@@ -16,11 +16,11 @@ jobs:
       contents: read
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
-        node-version: '20'
+        node-version: '24'
         cache: 'npm'
         cache-dependency-path: "*/package-lock.json"
 
@@ -66,6 +66,29 @@ jobs:
 
     - name: Build frontend
       run: cd frontend && npm run build
+
+    - name: Configure frontend2
+      run: |
+        cat > frontend2/src/frontend-config.ts << EOF
+        import { FrontendConfig } from "./environment";
+
+        export const CONFIG: FrontendConfig = {
+            region: "eu-west-1",
+            cognitoIdentityPoolId: "eu-west-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+            cognitoUserPoolId: "eu-west-1_xxxxxxxxx",
+            cognitoUserPoolWebClientId: "xxxxxxxxxxxxxxxxxxxxxxxxxx",
+            mediaBucket: "my-media-bucket"
+        };
+        EOF
+
+    - name: Install frontend2 dependencies
+      run: cd frontend2 && npm ci
+
+    - name: Test frontend2
+      run: cd frontend2 && npm run test
+
+    - name: Build frontend2
+      run: cd frontend2 && npm run build
 
     - name: Test frontend
       if: ${{ false }}

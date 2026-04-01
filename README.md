@@ -9,7 +9,7 @@ S3 Media Player uses the following technologies:
 
 * Authentication and Authorization: Cognito
 * Static web content: Cloudfront and S3
-* Frontend: React and AWS Amplify
+* Frontend: React and AWS Amplify (`frontend/`), or minimal vanilla TypeScript + Vite (`frontend2/`)
 * Media Storage: S3
 * Deployment: CloudFormation / CDK
 
@@ -138,6 +138,17 @@ cd frontend
 npm start
 ```
 
+### Frontend2 (minimal rewrite)
+
+```sh
+cd frontend2
+npm run dev      # Vite dev server at http://localhost:5173
+npm test         # run unit tests
+npm run build    # lint + type-check + production build
+```
+
+See [`frontend2/README.md`](frontend2/README.md) for setup and architecture details.
+
 ### Upgrade dependencies in `package.json`
 
 ```sh
@@ -153,6 +164,8 @@ When switching from `private-main` to the public `main` branch, git will delete 
 ```sh
 git show private-main:frontend/deploy/deploy-config.js > frontend/deploy/deploy-config.js \
   && git show private-main:frontend/src/frontend-config.ts > frontend/src/frontend-config.ts \
+  && git show private-main:frontend2/deploy/deploy-config.js > frontend2/deploy/deploy-config.js \
+  && git show private-main:frontend2/src/frontend-config.ts > frontend2/src/frontend-config.ts \
   && git show private-main:infrastructure/infrastructure-config.ts > infrastructure/infrastructure-config.ts
 ```
 

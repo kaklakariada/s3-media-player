@@ -1,0 +1,299 @@
+/* ============================================================
+   CSS custom properties
+   ============================================================ */
+:root {
+    --bg:         #1a1a2e;
+    --bg-card:    #16213e;
+    --bg-hover:   #0f3460;
+    --accent:     #e94560;
+    --text:       #eaeaea;
+    --text-muted: #8892a4;
+    --border:     #2a2a4a;
+    --bar-h:      64px;
+    --radius:     8px;
+}
+
+/* ============================================================
+   Reset / base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ============================================================
+   Main content area — scrollable, leaves room for player bar
+   ============================================================ */
+#main {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: calc(var(--bar-h) + 16px);
+}
+
+/* ============================================================
+   Loading indicator
+   ============================================================ */
+p.status {
+    padding: 32px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+/* ============================================================
+   Login view
+   ============================================================ */
+.login-card {
+    max-width: 380px;
+    margin: 80px auto;
+    padding: 40px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    text-align: center;
+}
+
+.login-card h1 {
+    margin-bottom: 32px;
+    font-size: 1.6rem;
+    color: var(--accent);
+}
+
+#login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#login-form input {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+#login-form input:focus {
+    border-color: var(--accent);
+}
+
+#login-form button[type="submit"] {
+    padding: 10px;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+#login-form button[type="submit"]:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.error {
+    color: var(--accent);
+    font-size: 0.9rem;
+    padding-top: 4px;
+}
+
+/* ============================================================
+   Browser view — top bar
+   ============================================================ */
+.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.app-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.sign-out-btn {
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.2s, color 0.2s;
+}
+
+.sign-out-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text);
+}
+
+/* ============================================================
+   Breadcrumb
+   ============================================================ */
+.breadcrumb {
+    padding: 10px 20px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    overflow-x: auto;
+}
+
+.breadcrumb a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.breadcrumb a:hover  { color: var(--text); }
+.breadcrumb a.current { color: var(--text); font-weight: 600; }
+.breadcrumb .sep { margin: 0 2px; }
+
+/* ============================================================
+   File list
+   ============================================================ */
+.file-list {
+    list-style: none;
+    padding: 8px 0;
+}
+
+.file-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+    user-select: none;
+}
+
+.file-list li:hover { background: var(--bg-hover); }
+
+.file-list li.playing {
+    background: rgba(233, 69, 96, 0.12);
+    border-left: 3px solid var(--accent);
+    padding-left: 17px;
+}
+
+.file-list li.empty {
+    cursor: default;
+    color: var(--text-muted);
+    justify-content: center;
+}
+
+.file-list .icon { font-size: 1.1rem; flex-shrink: 0; }
+.file-list .name  { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ============================================================
+   Player bar (fixed to bottom)
+   ============================================================ */
+#player-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--bar-h);
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+    z-index: 100;
+}
+
+.track-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    min-width: 0;
+}
+
+.ctrl-btn {
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+    line-height: 1;
+    transition: color 0.15s, background 0.15s;
+}
+
+.ctrl-btn:hover { background: var(--bg-hover); }
+
+.play-pause {
+    font-size: 1.4rem;
+    color: var(--accent);
+}
+
+.seek-bar {
+    flex: 2;
+    min-width: 60px;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+.volume-bar {
+    width: 110px;
+    max-width: 20vw;
+    min-width: 72px;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+.time {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.restore-notice {
+    color: var(--text);
+    background: rgba(233, 69, 96, 0.2);
+    border: 1px solid rgba(233, 69, 96, 0.45);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    line-height: 1;
+    padding: 0;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transform: translateY(2px);
+    transition: opacity 140ms ease, transform 140ms ease, max-width 180ms ease, padding 180ms ease;
+}
+
+.restore-notice.visible {
+    opacity: 1;
+    max-width: 240px;
+    padding: 6px 10px;
+    transform: translateY(0);
+}

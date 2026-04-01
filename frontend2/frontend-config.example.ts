@@ -1,0 +1,10 @@
+// Copy this file to src/frontend-config.ts and fill in the values from the CDK deploy output.
+import { FrontendConfig } from "./environment";
+
+export const CONFIG: FrontendConfig = {
+    region: 'eu-central-1',
+    cognitoIdentityPoolId: 'eu-central-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+    cognitoUserPoolId: 'eu-central-1_XXXXXXXXX',
+    cognitoUserPoolWebClientId: 'xxxxxxxxxxxxxxxxxxxxxxxxxx',
+    mediaBucket: 'my-media-bucket',
+};
