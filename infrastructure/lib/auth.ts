@@ -9,7 +9,7 @@ interface CognitoAuthProps {
 }
 export class CognitoAuthConstruct extends Construct {
 
-  private userRole: Role;
+  private readonly userRole: Role;
 
   getUserRole() {
     return this.userRole;

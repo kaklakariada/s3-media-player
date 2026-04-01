@@ -1,56 +1,30 @@
+import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn';
+import { ListItemButton, Typography } from "@mui/material";
+import CircularProgress from "@mui/material/CircularProgress";
+import Container from "@mui/material/Container";
+import List from '@mui/material/List';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import Container from "@mui/material/Container";
-import CircularProgress from "@mui/material/CircularProgress";
-import { S3Service, S3Object } from "../services/S3Service";
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import FolderIcon from '@mui/icons-material/Folder';
-import AudiotrackIcon from '@mui/icons-material/Audiotrack';
-import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn';
 import useMusicPlayer from "../hooks/useMusicPlayer";
+import { MediaService, S3Object } from "../services/MediaService";
+import { FolderMetadata, MetadataItem, MetadataService } from '../services/MetadataService';
 import { Playlist, PlaylistItem, PlaylistService } from "../services/PlaylistService";
-import { ListItemButton, Typography } from "@mui/material";
+import { AudioFileItem, FolderListItem, OtherFileItem } from './ListItem';
 
-const s3 = new S3Service();
+const s3 = new MediaService();
+const metadataService = new MetadataService();
 const playlistService = new PlaylistService();
 
-const FolderListItem: React.FC<{ folder: S3Object }> = ({ folder }) => {
-    return (<ListItemButton component={Link} to={`/${folder.key}`}>
-        <ListItemIcon>
-            <FolderIcon />
-        </ListItemIcon>
-        <ListItemText primary={folder.fileName} />
-    </ListItemButton>);
-}
 
-const OtherFileItem: React.FC<{ file: PlaylistItem }> = ({ file }) => {
-    return (<ListItem>
-        <ListItemIcon>
-            <InsertDriveFileIcon />
-        </ListItemIcon>
-        <ListItemText primary={file.track.fileName} />
-    </ListItem>);
-}
-
-const AudioFileItem: React.FC<{ file: PlaylistItem }> = ({ file }) => {
-    const { currentTrack, isPlaying } = useMusicPlayer();
-    const isCurrentTrack = file.equals(currentTrack);
-    const state = isCurrentTrack ? (isPlaying ? 'playing' : 'paused') : '';
-    return (<ListItemButton component={Link} to={`/${file.track.key}`}>
-        <ListItemIcon>
-            <AudiotrackIcon />
-        </ListItemIcon>
-        <ListItemText primary={file.track.fileName} secondary={state} />
-    </ListItemButton>);
-}
+type GenericError = any;
 
 const MediaList: React.FC<{ bucket: string, path: string, time?: number }> = ({ bucket, path, time }) => {
     const [playlist, setPlaylist] = useState<Playlist | undefined>(undefined);
-    const [error, setError] = useState<any | undefined>(undefined);
+    const [folderMetadata, setFolderMetadata] = useState<FolderMetadata | undefined>(undefined);
+    const [error, setError] = useState<GenericError | undefined>(undefined);
+    const [metadataError, setMetadataError] = useState<GenericError | undefined>(undefined);
     const { playerControl } = useMusicPlayer();
 
     const isFolder = path === '' || path.indexOf('/') < 0 || path.endsWith('/');
@@ -73,6 +47,28 @@ const MediaList: React.FC<{ bucket: string, path: string, time?: number }> = ({ 
     }, [bucket, currentFolder.key]);
 
     useEffect(() => {
+        (async function fetchMetadata() {
+            if (folderMetadata?.path === folderPath) {
+                console.log("Metadata already loaded for ", folderPath);
+                return;
+            }
+            await updateMetadata();
+        })();
+    }, [folderMetadata, folderPath]);
+
+    async function updateMetadata() {
+        console.log("Getting metadata for ", folderPath);
+        try {
+            const metadata = await metadataService.getMetadata(folderPath);
+            console.log("Metadata", metadata);
+            setFolderMetadata(metadata);
+        } catch (e) {
+            console.error("Error getting metadata", e);
+            setMetadataError(e)
+        }
+    }
+
+    useEffect(() => {
         if(!playlist) {
             return;
         }
@@ -93,14 +89,25 @@ const MediaList: React.FC<{ bucket: string, path: string, time?: number }> = ({ 
 
     const isAudioFile = (object: S3Object) => object.key.toLowerCase().endsWith('.mp3');
 
+
+    function getMetadata(key: string): MetadataItem | undefined {
+        if (!folderMetadata) {
+            return undefined;
+        }
+        return folderMetadata.items.find(item => item.key === key);
+    }
+
+
+
     function renderItem(object: PlaylistItem) {
         if (object.track.isFolder) {
             return <FolderListItem key={object.track.key} folder={object.track} />;
         }
+        const metadata = getMetadata(object.track.key);
         if (isAudioFile(object.track)) {
-            return <AudioFileItem key={object.track.key} file={object} />
+            return <AudioFileItem key={object.track.key} file={object} metadata={metadata} metadataChangeCallback={updateMetadata} />
         }
-        return <OtherFileItem key={object.track.key} file={object} />
+        return <OtherFileItem key={object.track.key} file={object} metadata={metadata} />
     }
 
     const parentPath = `/${currentFolder.getParentFolder().key}`;
@@ -112,13 +119,26 @@ const MediaList: React.FC<{ bucket: string, path: string, time?: number }> = ({ 
             <ListItemText primary={`Up one level to ${parentPath}`} />
         </ListItemButton>);
 
+    const loadingState = error ? `Error loading list: ${error}` : <CircularProgress />;
+
+    function getMetadataInfo() {
+        if (metadataError) {
+            return `Error loading metadata: ${metadataError}`;
+
+        }
+        if (folderMetadata) {
+            return `Metadata loaded for ${folderMetadata.items.length} items`;
+        }
+        return "Loading metadata..."
+    }
+
     return (
         <Container>
-            <Typography variant="h6">Current directory: {'/' + currentFolder.key}</Typography>
+            <Typography variant="h6">Current directory: {'/' + currentFolder.key}. {getMetadataInfo()}</Typography>
             <div>
                 {
                     (playlist === undefined)
-                        ? (error ? `Error loading list: ${error}` : <CircularProgress />)
+                        ? loadingState
                         : <List dense={true}>
                             {upOneLevel}
                             {playlist.items.map(renderItem)}

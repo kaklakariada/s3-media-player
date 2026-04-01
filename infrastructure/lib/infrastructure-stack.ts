@@ -3,6 +3,7 @@ import { PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { Bucket } from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
 import { CognitoAuthConstruct } from "./auth";
+import { DatabaseConstruct } from "./database";
 import { StaticContentConstruct } from "./static-content";
 
 export interface InfrastructureStackProps extends StackProps {
@@ -23,10 +24,16 @@ export class InfrastructureStack extends Stack {
       sslCertificateArn: props.sslCertificateArn
     });
 
+    const db = new DatabaseConstruct(this, 'Database', {});
+
     const auth = new CognitoAuthConstruct(this, 'Auth', {
       contactEmailAddress: props.contactEmailAddress,
       domain: props.domain
     });
+
+    auth.getUserRole().addToPolicy(new PolicyStatement({
+      actions: ["dynamodb:Scan", "dynamodb:PutItem"], resources: [db.table.tableArn]
+    }));
 
     const mediaBucket = Bucket.fromBucketName(this, 'MediaBucket', props.mediaBucket);
     auth.getUserRole().addToPolicy(new PolicyStatement({

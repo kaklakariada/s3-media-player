@@ -1,0 +1,9 @@
+{
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "modificationsIfAvailable",
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit",
+        "source.generate.finalModifiers": "explicit",
+        "source.fixAll": "explicit"
+    },
+}

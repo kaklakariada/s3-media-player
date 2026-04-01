@@ -1,6 +1,7 @@
-import { fetchAuthSession, AuthSession, signOut, getCurrentUser, AuthUser } from "aws-amplify/auth";
+import { AuthSession, AuthUser, fetchAuthSession, getCurrentUser, signOut } from "aws-amplify/auth";
 
 import { AWSCredentials } from "@aws-amplify/core/internals/utils";
+
 
 export class AuthService {
 
@@ -38,9 +39,10 @@ export class AuthService {
     }
 }
 
+export const AUTH_SERVICE = new AuthService();
+
 type CredentialsConsumer = (credentials: RenewableCredentials) => void;
 type CredentialsProvider = () => Promise<AWSCredentials>;
-
 
 const CREDENTIAL_RENEWAL_BUFFER_MILLIS = 1000*10;
 

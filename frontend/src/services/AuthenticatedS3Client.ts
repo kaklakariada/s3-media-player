@@ -1,6 +1,6 @@
 import S3, { ListObjectsV2Request } from "aws-sdk/clients/s3";
-import { AuthService, RenewableCredentials } from "./AuthService";
 import environment from '../environment';
+import { AuthService, RenewableCredentials } from "./AuthService";
 
 interface State {
     s3: S3;
@@ -47,20 +47,13 @@ export class S3Client {
         return new SignedUrl(url, operation, bucket, key, expiration, this);
     }
 
-    async listBuckets() {
-        return (await this.getS3()).listBuckets().promise();
-    }
-
-    async listObjectsV2(params: ListObjectsV2Request) {
-        return (await this.getS3()).listObjectsV2(params).promise();
-    }
-
-    private async createState(credentials: RenewableCredentials): Promise<State> {
-        const s3Config: S3.Types.ClientConfiguration = {
-            region: environment.region,
-            credentials: credentials.credentials
+    async listObjects(bucket: string, prefix: string) {
+        const params: ListObjectsV2Request = {
+            Bucket: bucket,
+            Delimiter: '/',
+            Prefix: prefix
         };
-        return { s3: new S3(s3Config), credentials };
+        return (await this.getS3()).listObjectsV2(params).promise();
     }
 
     private async getState(): Promise<State> {
@@ -73,6 +66,14 @@ export class S3Client {
             })
         }
         return this.state;
+    }
+
+    private async createState(credentials: RenewableCredentials): Promise<State> {
+        const s3Config: S3.Types.ClientConfiguration = {
+            region: environment.region,
+            credentials: credentials.credentials
+        };
+        return { s3: new S3(s3Config), credentials };
     }
 
     private async getS3(): Promise<S3> {
