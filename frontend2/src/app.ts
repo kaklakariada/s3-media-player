@@ -28,6 +28,7 @@ export class App {
     private trackNameEl!: HTMLElement;
     private playPauseBtn!: HTMLButtonElement;
     private seekBar!: HTMLInputElement;
+    private volumeBar!: HTMLInputElement;
     private timeEl!: HTMLElement;
 
     private view: View = 'loading';
@@ -255,9 +256,23 @@ export class App {
             this.player.seekToPct(Number.parseFloat(this.seekBar.value) / 100);
         });
 
+        this.volumeBar = el('input', {
+            type: 'range',
+            class: 'volume-bar',
+            min: '0',
+            max: '100',
+            value: String(Math.round(this.player.volume * 100)),
+            step: '1',
+            title: 'Volume',
+            'aria-label': 'Volume',
+        }) as HTMLInputElement;
+        this.volumeBar.addEventListener('input', () => {
+            this.player.setVolume(Number.parseFloat(this.volumeBar.value) / 100);
+        });
+
         this.timeEl = el('span', { class: 'time' }, ['0:00 / 0:00']);
 
-        bar.append(this.trackNameEl, prevBtn, this.playPauseBtn, nextBtn, this.seekBar, this.timeEl);
+        bar.append(this.trackNameEl, prevBtn, this.playPauseBtn, nextBtn, this.seekBar, this.timeEl, this.volumeBar);
         return bar;
     }
 

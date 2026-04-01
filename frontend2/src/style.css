@@ -260,6 +260,14 @@ p.status {
     cursor: pointer;
 }
 
+.volume-bar {
+    width: 110px;
+    max-width: 20vw;
+    min-width: 72px;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
 .time {
     font-size: 0.8rem;
     color: var(--text-muted);

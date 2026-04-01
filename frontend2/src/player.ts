@@ -82,6 +82,15 @@ export class AudioPlayer {
         }
     }
 
+    setVolume(level: number): void {
+        const clamped = Math.min(1, Math.max(0, level));
+        this.audio.volume = clamped;
+    }
+
+    get volume(): number {
+        return this.audio.volume;
+    }
+
     get isPlaying(): boolean {
         return !this.audio.paused;
     }
