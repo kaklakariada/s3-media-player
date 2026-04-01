@@ -56,11 +56,14 @@ npm run deploy     # build + sync to CloudFront
 
 ```bash
 npm run dev        # Vite dev server at http://localhost:5173
-npm run build      # tsc --noEmit + Vite production build → build/
+npm run lint       # ESLint (run automatically by build)
+npm test           # Vitest unit tests (single run)
+npm run test:watch # Vitest in watch mode
+npm run build      # lint + tsc --noEmit + Vite production build → build/
 npm run preview    # preview the production build locally
 ```
 
-No test suite yet. TypeScript strict mode enforced via `tsc --noEmit` in the build step.
+Unit tests live in `src/*.test.ts` and use Vitest. TypeScript strict mode enforced via `tsc --noEmit` in the build step.
 
 ### Infrastructure (`cd infrastructure`)
 

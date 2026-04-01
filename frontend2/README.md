@@ -11,7 +11,7 @@ Vanilla TypeScript SPA built with [Vite](https://vitejs.dev/). No UI framework. 
 | `@aws-sdk/client-s3` | Lists objects in the S3 bucket |
 | `@aws-sdk/s3-request-presigner` | Generates presigned GET URLs for audio tracks |
 
-Dev: `vite`, `typescript` only.
+Dev: `vite`, `typescript`, `vitest` (unit tests), `eslint` + `@typescript-eslint/*` (linting).
 
 ## Setup
 
@@ -33,9 +33,12 @@ cp frontend-config.example.ts src/frontend-config.ts
 
 ```bash
 npm install
-npm run dev      # Vite dev server at http://localhost:5173
-npm run build    # production build → build/
-npm run preview  # preview the production build locally
+npm run dev          # Vite dev server at http://localhost:5173
+npm run lint         # ESLint (automatically run by build)
+npm test             # Vitest unit tests (single run)
+npm run test:watch   # Vitest in watch mode
+npm run build        # lint + tsc --noEmit + production build → build/
+npm run preview      # preview the production build locally
 ```
 
 ## Architecture
