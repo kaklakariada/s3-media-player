@@ -84,6 +84,9 @@ jobs:
     - name: Install frontend2 dependencies
       run: cd frontend2 && npm ci
 
+    - name: Test frontend2
+      run: cd frontend2 && npm run test
+
     - name: Build frontend2
       run: cd frontend2 && npm run build
 

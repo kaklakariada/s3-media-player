@@ -81,14 +81,13 @@ export class AudioPlayer {
 
     seekToPct(pct: number): void {
         const d = this.audio.duration;
-        if (isFinite(d) && d > 0) {
+        if (Number.isFinite(d) && d > 0) {
             this.audio.currentTime = d * pct;
         }
     }
 
     setVolume(level: number): void {
-        const clamped = Math.min(1, Math.max(0, level));
-        this.audio.volume = clamped;
+        this.audio.volume = clampVolume(level);
     }
 
     get volume(): number {
@@ -197,4 +196,8 @@ export class AudioPlayer {
             this.refreshTimer = null;
         }
     }
+}
+
+export function clampVolume(level: number): number {
+    return Math.min(1, Math.max(0, level));
 }

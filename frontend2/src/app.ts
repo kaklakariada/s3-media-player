@@ -306,10 +306,10 @@ export class App {
         this.restoreNoticeEl.classList.add('visible');
 
         if (this.restoreNoticeTimer !== null) {
-            window.clearTimeout(this.restoreNoticeTimer);
+            globalThis.clearTimeout(this.restoreNoticeTimer);
         }
 
-        this.restoreNoticeTimer = window.setTimeout(() => {
+        this.restoreNoticeTimer = globalThis.setTimeout(() => {
             this.restoreNoticeEl.classList.remove('visible');
             this.restoreNoticeTimer = null;
         }, 3500);
@@ -507,7 +507,7 @@ function el<K extends keyof HTMLElementTagNameMap>(
     return node;
 }
 
-function fmtTime(seconds: number): string {
+export function fmtTime(seconds: number): string {
     if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);

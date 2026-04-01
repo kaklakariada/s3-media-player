@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "vite",
     "lint": "eslint . --ext .ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "build": "npm run lint && tsc --noEmit && vite build",
     "preview": "vite preview"
   },
@@ -21,6 +23,7 @@
     "eslint": "^10.1.0",
     "globals": "^17.4.0",
     "typescript": "^6.0.2",
-    "vite": "^8.0.3"
+    "vite": "^8.0.3",
+    "vitest": "^4.0.2"
   }
 }

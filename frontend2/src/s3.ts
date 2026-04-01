@@ -66,7 +66,7 @@ export class S3Browser {
     }
 }
 
-function basename(path: string): string {
+export function basename(path: string): string {
     const p = path.endsWith('/') ? path.slice(0, -1) : path;
     return p.slice(p.lastIndexOf('/') + 1);
 }
