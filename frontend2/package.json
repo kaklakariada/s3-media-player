@@ -4,16 +4,22 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "lint": "eslint . --ext .ts",
+    "build": "npm run lint && tsc --noEmit && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1020.0",
-    "@aws-sdk/credential-provider-cognito-identity": "^3.972.20",
-    "@aws-sdk/s3-request-presigner": "^3.1020.0",
+    "@aws-sdk/client-s3": "^3.1021.0",
+    "@aws-sdk/credential-provider-cognito-identity": "^3.972.21",
+    "@aws-sdk/s3-request-presigner": "^3.1021.0",
     "amazon-cognito-identity-js": "^6.3.16"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.58.0",
+    "@typescript-eslint/parser": "^8.58.0",
+    "eslint": "^10.1.0",
+    "globals": "^17.4.0",
     "typescript": "^6.0.2",
     "vite": "^8.0.3"
   }
