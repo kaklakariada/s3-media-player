@@ -274,3 +274,26 @@ p.status {
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
 }
+
+.restore-notice {
+    color: var(--text);
+    background: rgba(233, 69, 96, 0.2);
+    border: 1px solid rgba(233, 69, 96, 0.45);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    line-height: 1;
+    padding: 0;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transform: translateY(2px);
+    transition: opacity 140ms ease, transform 140ms ease, max-width 180ms ease, padding 180ms ease;
+}
+
+.restore-notice.visible {
+    opacity: 1;
+    max-width: 240px;
+    padding: 6px 10px;
+    transform: translateY(0);
+}

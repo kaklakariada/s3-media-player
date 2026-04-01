@@ -11,6 +11,15 @@ interface BrowserState {
 
 type View = 'loading' | 'login' | 'browser';
 
+interface PersistedPlayerState {
+    volume: number;
+    trackKey: string | null;
+    currentTime: number;
+    wasPlaying: boolean;
+}
+
+const PLAYER_STATE_KEY = 's3-media-player:state';
+
 /**
  * Top-level UI controller. Uses direct DOM manipulation — no framework.
  *
@@ -30,6 +39,8 @@ export class App {
     private seekBar!: HTMLInputElement;
     private volumeBar!: HTMLInputElement;
     private timeEl!: HTMLElement;
+    private restoreNoticeEl!: HTMLElement;
+    private restoreNoticeTimer: number | null = null;
 
     private view: View = 'loading';
     private browserState: BrowserState = { prefix: '', items: [], loading: false };
@@ -38,6 +49,7 @@ export class App {
     // True while the user holds the seek bar — prevents timeupdate from
     // clobbering their position
     private isSeeking = false;
+    private lastStateSaveAt = 0;
 
     constructor(
         private readonly auth: AuthService,
@@ -55,9 +67,17 @@ export class App {
         this.playerBarEl = this.buildPlayerBar();
         this.root.appendChild(this.playerBarEl);
 
+        this.applyPersistedVolume();
+
         // Wire player callbacks
-        this.player.onStateChange = () => this.updatePlayerBar();
-        this.player.onTimeUpdate = () => this.updateSeekBar();
+        this.player.onStateChange = () => {
+            this.updatePlayerBar();
+            this.savePlayerState();
+        };
+        this.player.onTimeUpdate = () => {
+            this.updateSeekBar();
+            this.savePlayerStateThrottled();
+        };
         this.player.onEnded = () => this.playNext();
 
         void this.init();
@@ -72,6 +92,7 @@ export class App {
             try {
                 await this.auth.restoreSession();
                 await this.navigate('');
+                await this.restorePlayerState();
                 return;
             } catch {
                 // session expired / invalid → fall through to login
@@ -128,7 +149,7 @@ export class App {
                 .login(userInput.value, passInput.value)
                 .then(() => {
                     this.loginError = '';
-                    return this.navigate('');
+                    return this.navigate('').then(() => this.restorePlayerState());
                 })
                 .catch((err: unknown) => {
                     this.loginError = (err as Error).message ?? 'Login failed';
@@ -268,12 +289,30 @@ export class App {
         }) as HTMLInputElement;
         this.volumeBar.addEventListener('input', () => {
             this.player.setVolume(Number.parseFloat(this.volumeBar.value) / 100);
+            this.savePlayerState();
         });
 
         this.timeEl = el('span', { class: 'time' }, ['0:00 / 0:00']);
+        this.restoreNoticeEl = el('span', { class: 'restore-notice', 'aria-live': 'polite' });
 
-        bar.append(this.trackNameEl, prevBtn, this.playPauseBtn, nextBtn, this.seekBar, this.timeEl, this.volumeBar);
+        bar.append(this.trackNameEl, prevBtn, this.playPauseBtn, nextBtn, this.seekBar, this.timeEl, this.volumeBar, this.restoreNoticeEl);
         return bar;
+    }
+
+    private showRestoreNotice(message: string): void {
+        if (!this.restoreNoticeEl) return;
+
+        this.restoreNoticeEl.textContent = message;
+        this.restoreNoticeEl.classList.add('visible');
+
+        if (this.restoreNoticeTimer !== null) {
+            window.clearTimeout(this.restoreNoticeTimer);
+        }
+
+        this.restoreNoticeTimer = window.setTimeout(() => {
+            this.restoreNoticeEl.classList.remove('visible');
+            this.restoreNoticeTimer = null;
+        }, 3500);
     }
 
     private updatePlayerBar(): void {
@@ -348,11 +387,103 @@ export class App {
     }
 
     private signOut(): void {
+        this.savePlayerState();
         this.auth.logout();
         this.player.stop();
         this.loginError = '';
         this.view = 'login';
         this.render();
+    }
+
+    private applyPersistedVolume(): void {
+        const state = this.readPersistedState();
+        if (!state) return;
+        this.player.setVolume(state.volume);
+    }
+
+    private savePlayerStateThrottled(): void {
+        const now = Date.now();
+        if (now - this.lastStateSaveAt < 1000) return;
+        this.lastStateSaveAt = now;
+        this.savePlayerState();
+    }
+
+    private savePlayerState(): void {
+        const prev = this.readPersistedState();
+
+        const state: PersistedPlayerState = {
+            volume: this.player.volume,
+            trackKey: this.player.currentTrackKey ?? prev?.trackKey ?? null,
+            currentTime: this.player.currentTrackKey ? this.player.currentTime : (prev?.currentTime ?? 0),
+            wasPlaying: this.player.currentTrackKey ? this.player.isPlaying : (prev?.wasPlaying ?? false),
+        };
+
+        this.writePersistedState(state);
+    }
+
+    private async restorePlayerState(): Promise<void> {
+        const state = this.readPersistedState();
+        if (!state) return;
+
+        this.player.setVolume(state.volume);
+        if (this.volumeBar) {
+            this.volumeBar.value = String(Math.round(state.volume * 100));
+        }
+
+        if (!state.trackKey) return;
+
+        try {
+            await this.player.restore(state.trackKey, state.currentTime, state.wasPlaying);
+            this.updatePlayerBar();
+            this.updateSeekBar();
+            this.showRestoreNotice(`Restored at ${fmtTime(this.player.currentTime)}`);
+        } catch (err) {
+            // Browser autoplay policies may block resume without a user gesture.
+            // In that case restore in paused state so user can continue with one click.
+            if (state.wasPlaying) {
+                try {
+                    await this.player.restore(state.trackKey, state.currentTime, false);
+                    this.updatePlayerBar();
+                    this.updateSeekBar();
+                    this.showRestoreNotice(`Restored at ${fmtTime(this.player.currentTime)} (tap play to continue)`);
+                    return;
+                } catch {
+                    // Fall through to the original error log.
+                }
+            }
+
+            console.error('[App] Failed to restore playback state', err);
+        }
+    }
+
+    private readPersistedState(): PersistedPlayerState | null {
+        try {
+            const raw = localStorage.getItem(PLAYER_STATE_KEY);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw) as Partial<PersistedPlayerState>;
+
+            const volume = typeof parsed.volume === 'number' ? parsed.volume : 1;
+            const currentTime = typeof parsed.currentTime === 'number' ? Math.max(0, parsed.currentTime) : 0;
+            const wasPlaying = parsed.wasPlaying === true;
+            const trackKey = typeof parsed.trackKey === 'string' ? parsed.trackKey : null;
+
+            return {
+                volume: Math.min(1, Math.max(0, volume)),
+                currentTime,
+                wasPlaying,
+                trackKey,
+            };
+        } catch {
+            return null;
+        }
+    }
+
+    private writePersistedState(state: PersistedPlayerState): void {
+        try {
+            localStorage.setItem(PLAYER_STATE_KEY, JSON.stringify(state));
+        } catch {
+            // Ignore storage errors (private mode / quota / disabled storage)
+        }
     }
 }
 

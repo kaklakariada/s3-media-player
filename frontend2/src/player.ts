@@ -34,6 +34,7 @@ export class AudioPlayer {
     onEnded: (() => void) | null = null;
 
     constructor(private readonly s3: S3Browser) {
+        this.audio.preload = 'metadata';
         this.audio.addEventListener('ended', () => this.onEnded?.());
         this.audio.addEventListener('timeupdate', () => this.onTimeUpdate?.());
         this.audio.addEventListener('play', () => this.onStateChange?.());
@@ -42,16 +43,15 @@ export class AudioPlayer {
 
     /** Loads and starts playing the S3 object at `key`. */
     async play(key: string): Promise<void> {
-        this.cancelRefreshTimer();
-        this.currentKey = key;
+        await this.loadTrack(key, 0, true);
+    }
 
-        const url = await this.s3.presignUrl(key, URL_EXPIRES_SECONDS);
-        this.urlExpiresAt = Date.now() + URL_EXPIRES_SECONDS * 1000;
-
-        this.audio.src = url;
-        await this.audio.play();
-        this.scheduleRefresh();
-        this.onStateChange?.();
+    /**
+     * Loads a track at a saved position and optionally starts playback.
+     * Used to restore state after page reload or re-login.
+     */
+    async restore(key: string, atSeconds: number, autoplay: boolean): Promise<void> {
+        await this.loadTrack(key, atSeconds, autoplay);
     }
 
     pause(): void {
@@ -59,7 +59,11 @@ export class AudioPlayer {
     }
 
     resume(): void {
-        void this.audio.play();
+        void this.audio.play().then(() => {
+            if (this.currentKey && this.refreshTimer === null) {
+                this.scheduleRefresh();
+            }
+        });
     }
 
     stop(): void {
@@ -110,6 +114,36 @@ export class AudioPlayer {
     // -------------------------------------------------------------------------
     // Presigned URL refresh
     // -------------------------------------------------------------------------
+
+    private async loadTrack(key: string, atSeconds: number, autoplay: boolean): Promise<void> {
+        this.cancelRefreshTimer();
+        this.currentKey = key;
+
+        const url = await this.s3.presignUrl(key, URL_EXPIRES_SECONDS);
+        this.urlExpiresAt = Date.now() + URL_EXPIRES_SECONDS * 1000;
+
+        this.audio.src = url;
+        this.audio.load();
+
+        await new Promise<void>((resolve) => {
+            const onReady = () => {
+                this.audio.removeEventListener('canplay', onReady);
+                resolve();
+            };
+            this.audio.addEventListener('canplay', onReady);
+        });
+
+        if (Number.isFinite(atSeconds) && atSeconds > 0) {
+            this.audio.currentTime = atSeconds;
+        }
+
+        if (autoplay) {
+            await this.audio.play();
+        }
+
+        this.scheduleRefresh();
+        this.onStateChange?.();
+    }
 
     private scheduleRefresh(): void {
         const msUntilRefresh = this.urlExpiresAt - Date.now() - REFRESH_BEFORE_EXPIRY_MS;
