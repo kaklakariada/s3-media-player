@@ -14,9 +14,12 @@ jobs:
         shell: "bash"
     permissions:
       contents: read
+      pull-requests: read
 
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
 
     - uses: actions/setup-node@v6
       with:
@@ -45,7 +48,7 @@ jobs:
     - name: Build infrastructure
       run: cd infrastructure && npm run cdk synth
     - name: Test infrastructure
-      run: cd infrastructure && npm run test
+      run: cd infrastructure && npm run test -- --coverage
 
     - name: Configure frontend
       run: |
@@ -85,7 +88,7 @@ jobs:
       run: cd frontend2 && npm ci
 
     - name: Test frontend2
-      run: cd frontend2 && npm run test
+      run: cd frontend2 && npm run test:coverage
 
     - name: Build frontend2
       run: cd frontend2 && npm run build
@@ -93,3 +96,9 @@ jobs:
     - name: Test frontend
       if: ${{ false }}
       run: cd frontend && npm run test
+
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarqube-scan-action@v7
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

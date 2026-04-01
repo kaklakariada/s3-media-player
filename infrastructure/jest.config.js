@@ -6,4 +6,7 @@ module.exports = {
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     },
+    collectCoverageFrom: ['lib/**/*.ts', 'bin/**/*.ts'],
+    coverageReporters: ['lcov', 'text'],
+    coverageDirectory: 'coverage',
   }
